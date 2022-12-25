@@ -1,11 +1,9 @@
 package frc.robot
 
-import SwerveModule
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.math.kinematics.ChassisSpeeds
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
+import frc.robot.commands.DriveCommand
+import frc.robot.subsystems.Drivetrain
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -14,44 +12,35 @@ import edu.wpi.first.wpilibj.XboxController
  * project.
  */
 class Robot : TimedRobot() {
-
+    /**
+     * xbox controller
+     */
     val xbox = XboxController(0)
 
-    val fl = SwerveModule("fl", 10, 14, 6, Translation2d(.32,.32))
-    val fr = SwerveModule("fr", 11, 15, 7, Translation2d(.32,-.32))
-    val br = SwerveModule("br", 12, 16, 8, Translation2d(-.32,-.32))
-    val bl = SwerveModule("bl", 13, 17, 9, Translation2d(-.32,.32))
-
-    val modules = arrayOf(fl, fr, br, bl)
-
-    val kinematics = SwerveDriveKinematics(*modules.map { it.translation2d }.toTypedArray())
-
-
-
     /**
-     * This function is run when the robot is first started up and should be used for any
-     * initialization code.
+     * drive subsystem
      */
-    override fun robotInit() {}
+    val drivetrain = Drivetrain()
 
-    override fun robotPeriodic() {
+    private var robotContainer: RobotContainer? = null
+
+    override fun robotInit() {
+        robotContainer = RobotContainer(xbox)
     }
+
+    override fun robotPeriodic() {}
 
     /** This function is called once when teleop is enabled. */
     override fun teleopInit() {}
 
     /** This function is called periodically during operator control. */
     override fun teleopPeriodic() {
-        val speeds = ChassisSpeeds(-xbox.leftY,-xbox.leftX, -xbox.rightX)
-        val modules = kinematics.toSwerveModuleStates(speeds)
-        // switch this to swerve kinematics, have one stick control X/Y, other for rotation
-        modules.forEachIndexed({i,state ->
-            this.modules[i].move(state)
-        })
+        DriveCommand(drivetrain).schedule()
     }
-
     /** This function is called once when the robot is disabled. */
-    override fun disabledInit() {}
+    override fun disabledInit() {
+        drivetrain.stop()
+    }
 
     /** This function is called periodically when disabled. */
     override fun disabledPeriodic() {}
