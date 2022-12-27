@@ -2,8 +2,7 @@ package frc.robot
 
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
-import frc.robot.commands.DriveCommand
-import frc.robot.subsystems.Drivetrain
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -18,36 +17,64 @@ class Robot : TimedRobot() {
     val xbox = XboxController(0)
 
     /**
-     * drive subsystem
+     * robot container
      */
-    val drivetrain = Drivetrain()
-
     private var robotContainer: RobotContainer? = null
 
     override fun robotInit() {
         robotContainer = RobotContainer(xbox)
     }
 
-    override fun robotPeriodic() {}
+    override fun robotPeriodic() {
+        robotContainer?.periodic()
+        CommandScheduler.getInstance().run()
+    }
+
+    override fun simulationInit() {
+        robotContainer = RobotContainer(xbox)
+
+    }
+
+    override fun simulationPeriodic() {
+        robotContainer?.simulationPeriodic()
+    }
 
     /** This function is called once when teleop is enabled. */
-    override fun teleopInit() {}
+    override fun teleopInit() {
+        robotContainer?.teleopInit()
+    }
 
     /** This function is called periodically during operator control. */
     override fun teleopPeriodic() {
-        DriveCommand(drivetrain).schedule()
+        robotContainer?.teleopPeriodic()
     }
     /** This function is called once when the robot is disabled. */
     override fun disabledInit() {
-        drivetrain.stop()
+        robotContainer?.disabledInit()
     }
 
     /** This function is called periodically when disabled. */
-    override fun disabledPeriodic() {}
+    override fun disabledPeriodic() {
+        robotContainer?.disabledPeriodic()
+    }
 
     /** This function is called once when test mode is enabled. */
-    override fun testInit() {}
+    override fun testInit() {
+        robotContainer?.testInit()
+    }
 
     /** This function is called periodically during test mode. */
-    override fun testPeriodic() {}
+    override fun testPeriodic() {
+        robotContainer?.testPeriodic()
+    }
+
+    /** This function is called once when autonomous is enabled. */
+    override fun autonomousInit() {
+        robotContainer?.autonomousInit()
+    }
+
+    /** This function is called periodically during autonomous. */
+    override fun autonomousPeriodic() {
+        robotContainer?.autonomousPeriodic()
+    }
 }
