@@ -3,7 +3,9 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
+import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import frc.robot.commands.DriveCommand
 import frc.robot.Constants
 
 class Drivetrain: SubsystemBase() {
@@ -42,10 +44,10 @@ class Drivetrain: SubsystemBase() {
         *modules.map { it.translation2d }.toTypedArray()
     )
 
-//     default command
-//    override fun setDefaultCommand(defaultCommand: Command?) {
-//        super.setDefaultCommand(DriveCommand(this))
-//    }
+    // default command
+    override fun setDefaultCommand(defaultCommand: Command?) {
+        super.setDefaultCommand(DriveCommand(this))
+    }
 
     fun move(x: Double, y: Double, rotation: Double) {
         val speeds = ChassisSpeeds(x,y, rotation)
@@ -54,22 +56,18 @@ class Drivetrain: SubsystemBase() {
         modules.forEachIndexed { i, state ->
             this.modules[i].move(state)
         }
-        println("moving drivetrain")
     }
 
     fun stop() {
         modules.forEach { it.stop() }
-        println("stopping drivetrain")
     }
 
     fun zeroEncoders() {
         modules.forEach { it.zeroEncoders() }
-        println("zeroing drivetrain encoders")
     }
 
     fun reset() {
         modules.forEach { it.reset() }
-        println("resetting drivetrain")
     }
 
     var brakeMode: Boolean
@@ -80,5 +78,9 @@ class Drivetrain: SubsystemBase() {
 
     override fun periodic() {
         modules.forEach { it.periodic() }
+    }
+
+    override fun simulationPeriodic() {
+        // This method will be called once per scheduler run during simulation
     }
 }
