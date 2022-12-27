@@ -105,12 +105,14 @@ class SwerveModule(
     override fun periodic() {
         SmartDashboard.putNumber("${name} ang", this.angle)
         SmartDashboard.putNumber("${name} vel", this.velocity)
+        super.periodic()
     }
 
     // proper simulation periodic method
     override fun simulationPeriodic() {
         SmartDashboard.putNumber("${name} ang", this.angle)
         SmartDashboard.putNumber("${name} vel", this.velocity)
+        super.simulationPeriodic()
     }
 
     fun stop() {

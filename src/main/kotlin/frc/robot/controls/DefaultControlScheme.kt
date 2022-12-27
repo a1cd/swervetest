@@ -11,18 +11,18 @@ class DefaultControlScheme(
         get() = xbox.leftY
 
     override val forewardThresholdTrigger: Trigger
-        get() = Trigger { xbox.leftY > 0.05 || xbox.leftY < -0.05 }
+        get() = Trigger { (xbox.leftY > 0.05) || (xbox.leftY < -0.05) }
 
     override val strafe: Double
         get() = xbox.leftX
 
     override val strafeThresholdTrigger: Trigger
-        get() = Trigger { xbox.leftX > 0.05 || xbox.leftX < -0.05 }
+        get() = Trigger { (xbox.leftX > 0.05) || (xbox.leftX < -0.05) }
     override val rotation: Double
         get() = xbox.rightX
 
     override val rotationThresholdTrigger: Trigger
-        get() = Trigger { xbox.rightX > 0.05 || xbox.rightX < -0.05 }
+        get() = Trigger { (xbox.rightX > 0.05) || (xbox.rightX < -0.05) }
 
     override val zeroEncoders: Button
         get() = Button { xbox.aButton }
