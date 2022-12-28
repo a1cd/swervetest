@@ -40,9 +40,12 @@ jobs:
           path: tests.json # upload the tests.json file
       # we also neet to output the file so that the next job can use it
       - name: Set output # also read the tests.json file and cat the github action output
+        id: testid
         run: echo "tests=$(cat tests.json)" >> $GITHUB_OUTPUT; cat $GITHUB_OUTPUT
       - name: read output # read the output
-        run: echo "tests=${{ steps.set-output.outputs.tests }}"
+        run: echo ${{ steps.testid.outputs.tests }}
+    outputs:
+      tests: ${{ steps.testid.outputs.tests }}
 
 
   out:
