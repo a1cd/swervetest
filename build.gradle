@@ -124,10 +124,12 @@ tasks.register('getTests') {
         testClassList = testClassList.findAll { it.endsWith("Test") }
 
         // convert each element to a string
-        def testClassListString = testClassList.collect { it.toString() }
+        def testClassListString = testClassList.collect { "\""+it.toString()+"\"" }
 
-        // write the list to tests.txt in json
-        file('tests.txt').write(testClassListString.toString())
+        // write the list to tests.json
+        def testsJson = new File("tests.json")
+        testsJson.write(testClassListString.toString())
+
     }
 }
 
