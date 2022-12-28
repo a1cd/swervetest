@@ -41,6 +41,9 @@ jobs:
       # we also neet to output the file so that the next job can use it
       - name: Set output # also read the tests.json file and cat the github action output
         run: echo "tests=$(cat tests.json)" >> $GITHUB_OUTPUT; cat $GITHUB_OUTPUT
+      - name: read output # read the output
+        run: echo "tests=${{ steps.set-output.outputs.tests }}"
+
 
   out:
     needs: get-tests
