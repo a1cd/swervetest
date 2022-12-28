@@ -8,27 +8,52 @@
 name: gradle test
 
 on:
-  push:
-    branches: [ "master" ]
+  # any pull request
   pull_request:
-    branches: [ "master" ]
+  # any push to master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  # this test is a heavily modified version of the official gradle test
+  # so that it runs each test in parallel and then aggregates the results
+  # all in github actions
+    get-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up JDK 11
+              uses: actions/setup-java@v1
+              with:
+                java-version: '11'
+                distribution: 'temurin'
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+            - name: Get tests
+              run: ./gradlew getTests
+            - name: Upload tests
+              uses: actions/upload-artifact@v2
+              with:
+                  name: tests
+                  path: tests.txt
+    test:
+        needs: get-tests
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                test: ${{ fromJson(needs.get-tests.outputs.tests) }}
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up JDK 11
+              uses: actions/setup-java@v1
+              with:
+                java-version: '11'
+                distribution: 'temurin'
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+            - name: Run tests
+              run: ./gradlew test --tests ${{ matrix.test }}
 
 permissions:
   contents: read
-
-jobs:
-  test:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-    - name: Test with Gradle
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-      with:
-        arguments: test
