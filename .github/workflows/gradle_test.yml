@@ -39,9 +39,8 @@ jobs:
                   name: tests # name the artifact tests
                   path: tests.txt # upload the tests.txt file
             # we also neet to output the file so that the next job can use it
-            - name: Output tests
-              id: tests
-              run: echo "::set-output name=tests::$(cat tests.txt)"
+            - name: Set output
+              run: echo "{tests}={$(cat tests.txt)}" >> $GITHUB_OUTPUT
 
     test:
         needs: get-tests
