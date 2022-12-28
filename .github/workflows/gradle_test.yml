@@ -42,7 +42,7 @@ jobs:
       - name: Set output
         run: echo "{tests}={$(cat tests.json)}" >> $GITHUB_OUTPUT
       - name: Output
-        run: echo $GITHUB_OUTPUT
+        run: cat $GITHUB_OUTPUT
 
   test:
     needs: get-tests
