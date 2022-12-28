@@ -112,32 +112,22 @@ tasks.register('getTests') {
     dependsOn testClasses
 
     doLast {
-        def testClasses = []
-        // get all test classes
-        configurations.testRuntimeClasspath.each { file -> // iterate over all files in the test runtime classpath
-            if (file.name.endsWith(".jar")) { // if it's a jar file
-                def jar = new JarFile(file) // open the jar file
-                jar.entries().each { entry -> // iterate over all entries in the jar file
-                    // make sure its not junit
-                    if (entry.name.endsWith("Test.class") && !entry.name.contains("junit")) {
-                        // add the test class to the list
-                        testClasses.add(entry.name.replace("/", ".").replace(".class", ""))
-                    }
-                }
-            }
-        }
+        // get files in build/classes/kotlin/test
+        def testClassesTree = fileTree(dir: 'build/classes/kotlin/test', include: '**/*.class')
+        // get files in build/classes/java/test
+        testClassesTree += fileTree(dir: 'build/classes/java/test', include: '**/*.class')
 
-        // put test classes in tests.txt
-        def file = new File("tests.txt")
-        // clear file
-        file.delete()
-        // convert each test class to a string and put them in new list
-        def testClassesString = testClasses.collect { it.toString() }
-        // write test classes to file in json format
-        file.write(testClassesString as String)
+        // create a list of test classes
+        def testClassList = testClassesTree.files.collect { it.name.replace(".class", "") }
 
-        // each string will be used in a test command like so:
-        // ./gradlew test --tests "frc.robot.commands.ExampleCommandTest"
+        // filter out the test classes that are not test classes
+        testClassList = testClassList.findAll { it.endsWith("Test") }
+
+        // convert each element to a string
+        def testClassListString = testClassList.collect { it.toString() }
+
+        // write the list to tests.txt in json
+        file('tests.txt').write(testClassListString.toString())
     }
 }
 
