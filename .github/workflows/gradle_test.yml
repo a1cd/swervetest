@@ -40,7 +40,7 @@ jobs:
           path: tests.json # upload the tests.txt file
       # we also neet to output the file so that the next job can use it
       - name: Set output
-        run: echo "{tests}={$(cat tests.json)}" >> $GITHUB_OUTPUT
+        run: echo "{tests}={\"tests\":$(cat tests.json)}" >> $GITHUB_OUTPUT
       - name: Output
         run: cat $GITHUB_OUTPUT
 
