@@ -112,7 +112,11 @@ tasks.register('getTests') {
                 }
             }
         }
-        println testClasses
+
+        // put test classes in tests.txt
+        def file = new File("tests.txt")
+        file.write(testClasses.join("\r"))
+        file.close()
     }
 }
 
