@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test: ${{ fromJson(needs.get-tests.outputs.tests) }} # get the tests from the previous job
+        test: ${{ needs.get-tests.outputs.tests }} # get the tests from the previous job
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
