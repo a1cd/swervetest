@@ -37,12 +37,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: tests # name the artifact tests
-          path: tests.json # upload the tests.txt file
+          path: tests.json # upload the tests.json file
       # we also neet to output the file so that the next job can use it
-      - name: Set output
-        run: echo "{tests}={\"tests\":$(cat tests.json)}" >> $GITHUB_OUTPUT
-      - name: Output
-        run: cat $GITHUB_OUTPUT
+      - name: Set output # also read the tests.json file and cat the github action output
+        run: echo "{tests}={\"tests\":$(cat tests.json)}" >> $GITHUB_OUTPUT; cat $GITHUB_OUTPUT
 
   test:
     needs: get-tests
