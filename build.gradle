@@ -17,6 +17,7 @@ def ROBOT_MAIN_CLASS = "frc.robot.Main"
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
+    //noinspection GroovyAssignabilityCheck
     targets {
         roborio(getTargetTypeClass('RoboRIO')) {
             // Team number is loaded either from the .wpilib/wpilib_preferences.json
@@ -49,7 +50,7 @@ test {
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 
 // Set to true to use debug for JNI.
-//noinspection GroovyAccessibility
+//noinspection GroovyAssignabilityCheck, GroovyAccessibility
 wpi.java.debugJni = false
 
 // Set this to true to enable desktop support.
@@ -83,7 +84,7 @@ dependencies {
 }
 
 // Simulation configuration (e.g. environment variables).
-//noinspection GroovyAccessibility
+//noinspection GroovyAssignabilityCheck,GroovyAccessibility
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
@@ -117,7 +118,10 @@ tasks.register('getTests') {
 
         // put test classes in tests.txt
         def file = new File("tests.txt")
-        file.write(testClasses.join("\r")) // join the list with newlines
+        // clear file
+        file.delete()
+        // convert to json and write to file
+        file.write(testClasses.toString())
     }
 }
 
