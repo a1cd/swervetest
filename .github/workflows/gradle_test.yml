@@ -42,6 +42,13 @@ jobs:
       - name: Set output # also read the tests.json file and cat the github action output
         run: echo "{tests}={\"tests\":$(cat tests.json)}" >> $GITHUB_OUTPUT; cat $GITHUB_OUTPUT
 
+  out:
+    needs: get-tests
+    runs-on: ubuntu-latest
+    steps:
+      # print the output of the previous job
+        - name: Print output
+          run: echo ${{ needs.get-tests.outputs.tests }}
   test:
     needs: get-tests
     runs-on: ubuntu-latest
