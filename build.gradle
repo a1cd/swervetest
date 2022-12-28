@@ -99,8 +99,18 @@ jar {
 }
 
 
-// get all test classes command
+// get all test classes command (its used so that the test classes can be run through github actions)
 tasks.register('getTests') {
+    dependsOn compileKotlin
+    dependsOn compileJava
+    dependsOn processResources
+    dependsOn classes
+    dependsOn compileTestKotlin
+    dependsOn compileTestJava
+    dependsOn extractReleaseNative
+    dependsOn processTestResources
+    dependsOn testClasses
+
     doLast {
         def testClasses = []
         // get all test classes
@@ -108,9 +118,10 @@ tasks.register('getTests') {
             if (file.name.endsWith(".jar")) { // if it's a jar file
                 def jar = new JarFile(file) // open the jar file
                 jar.entries().each { entry -> // iterate over all entries in the jar file
-                    if (entry.name.endsWith("Test.class")) { // if it's a test class
+                    // make sure its not junit
+                    if (entry.name.endsWith("Test.class") && !entry.name.contains("junit")) {
                         // add the test class to the list
-                        testClasses << entry.name.replace("/", ".").replace(".class", "")
+                        testClasses.add(entry.name.replace("/", ".").replace(".class", ""))
                     }
                 }
             }
@@ -120,8 +131,13 @@ tasks.register('getTests') {
         def file = new File("tests.txt")
         // clear file
         file.delete()
-        // convert to json and write to file
-        file.write(testClasses.toString())
+        // convert each test class to a string and put them in new list
+        def testClassesString = testClasses.collect { it.toString() }
+        // write test classes to file in json format
+        file.write(testClassesString as String)
+
+        // each string will be used in a test command like so:
+        // ./gradlew test --tests "frc.robot.commands.ExampleCommandTest"
     }
 }
 
