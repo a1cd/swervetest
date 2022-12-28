@@ -102,11 +102,13 @@ jar {
 tasks.register('getTests') {
     doLast {
         def testClasses = []
-        configurations.testRuntimeClasspath.each { file ->
-            if (file.name.endsWith(".jar")) {
-                def jar = new JarFile(file)
-                jar.entries().each { entry ->
-                    if (entry.name.endsWith("Test.class")) {
+        // get all test classes
+        configurations.testRuntimeClasspath.each { file -> // iterate over all files in the test runtime classpath
+            if (file.name.endsWith(".jar")) { // if it's a jar file
+                def jar = new JarFile(file) // open the jar file
+                jar.entries().each { entry -> // iterate over all entries in the jar file
+                    if (entry.name.endsWith("Test.class")) { // if it's a test class
+                        // add the test class to the list
                         testClasses << entry.name.replace("/", ".").replace(".class", "")
                     }
                 }
@@ -115,8 +117,7 @@ tasks.register('getTests') {
 
         // put test classes in tests.txt
         def file = new File("tests.txt")
-        file.write(testClasses.join("\r"))
-        file.close()
+        file.write(testClasses.join("\r")) // join the list with newlines
     }
 }
 
