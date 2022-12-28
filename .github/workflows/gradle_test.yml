@@ -40,7 +40,7 @@ jobs:
           path: tests.json # upload the tests.json file
       # we also neet to output the file so that the next job can use it
       - name: Set output # also read the tests.json file and cat the github action output
-        run: echo "{tests}={\"tests\":$(cat tests.json)}" >> $GITHUB_OUTPUT; cat $GITHUB_OUTPUT
+        run: echo "::set-output name=tests::$(cat tests.json)"
 
   out:
     needs: get-tests
