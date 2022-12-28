@@ -22,27 +22,33 @@ jobs:
     get-tests:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - name: Set up JDK 11
-              uses: actions/setup-java@v3
+            - uses: actions/checkout@v3 # checkout the repo
+            - name: Set up JDK 11 # set up java 11
+              uses: actions/setup-java@v3 # use the setup-java action
               with:
-                java-version: '11'
-                distribution: 'temurin'
+                java-version: '11' # we want java 11
+                distribution: 'temurin' # we want temurin because frc uses it
             - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
+              run: chmod +x gradlew # make gradlew executable
             - name: Get tests
-              run: ./gradlew getTests
+              run: ./gradlew getTests # run the getTests task which should generate a file called tests.txt
             - name: Upload tests
+              # upload the tests.txt file as an artifact (which is a file that can be downloaded)
               uses: actions/upload-artifact@v3
               with:
-                  name: tests
-                  path: tests.txt
+                  name: tests # name the artifact tests
+                  path: tests.txt # upload the tests.txt file
+            # we also neet to output the file so that the next job can use it
+            - name: Output tests
+              id: tests
+              run: echo "::set-output name=tests::$(cat tests.txt)"
+
     test:
         needs: get-tests
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                test: ${{ fromJson(needs.get-tests.outputs.tests) }}
+                test: ${{ fromJson(needs.get-tests.outputs.tests) }} # get the tests from the previous job
         steps:
             - uses: actions/checkout@v3
             - name: Set up JDK 11
