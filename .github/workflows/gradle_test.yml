@@ -41,6 +41,8 @@ jobs:
       # we also neet to output the file so that the next job can use it
       - name: Set output
         run: echo "{tests}={$(cat tests.json)}" >> $GITHUB_OUTPUT
+      - name: Output
+        run: echo $GITHUB_OUTPUT
 
   test:
     needs: get-tests
