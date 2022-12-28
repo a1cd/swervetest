@@ -7,15 +7,16 @@ import frc.robot.commands.DriveCommand
 import frc.robot.commands.ResetCommand
 import frc.robot.commands.ToggleBrakemodeCommand
 import frc.robot.commands.ZeroEncodersCommand
+import frc.robot.controls.ControlScheme
 import frc.robot.controls.DefaultControlScheme
 import frc.robot.subsystems.Drivetrain
 
-class RobotContainer(
+open class RobotContainer(
     xbox: XboxController = XboxController(0)
 ) {
     var state: RobotState? = null
 
-    val controlType = DefaultControlScheme(xbox)
+    val controlType: ControlScheme = DefaultControlScheme(xbox)
 
     val drivetrain = Drivetrain()
 
@@ -41,7 +42,7 @@ class RobotContainer(
     /**
      * called by robot periodic
      */
-    fun periodic() {
+    open fun periodic() {
         // put the state in the smart dashboard along with control scheme data
         state?.let { state ->
             SmartDashboard.putString("state", state.name)
@@ -51,26 +52,28 @@ class RobotContainer(
         SmartDashboard.putNumber("rotation", controlScheme.rotation)
         SmartDashboard.putBoolean("brakeMode", drivetrain.brakeMode)
     }
-    fun disabledInit() {
+    open fun disabledInit() {
         state = RobotState.DISABLED
         drivetrain.stop()
     }
-    fun disabledPeriodic() {}
-    fun autonomousInit() {
+    open fun disabledPeriodic() {}
+    open fun autonomousInit() {
         state = RobotState.AUTONOMOUS
     }
-    fun autonomousPeriodic() {
+    open fun autonomousPeriodic() {
     }
-    fun teleopInit() {
+    open fun teleopInit() {
         state = RobotState.TELEOP
     }
-    fun teleopPeriodic() {
+    open fun teleopPeriodic() {
         controlScheme
     }
-    fun testInit() {
+    open fun testInit() {
         state = RobotState.TEST
     }
-    fun testPeriodic() {}
-    fun simulationPeriodic() {
+    open fun testPeriodic() {}
+    open fun simulationPeriodic() {
     }
+
+    open fun robotInit() {}
 }
