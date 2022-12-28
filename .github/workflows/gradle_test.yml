@@ -47,7 +47,16 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                test: ${{ fromJson(needs.get-tests.outputs.tests) }} # get the tests from the previous job
+#                test: ${{ fromJson(needs.get-tests.outputs.tests) }} # get the tests from the previous job
+                # Error when evaluating 'strategy' for job 'test'. .github/workflows/gradle_test.yml (Line: 50, Col: 23): Error parsing fromJson,.github/workflows/gradle_test.yml (Line: 50, Col: 23): Error reading JToken from JsonReader. Path '', line 0, position 0.,.github/workflows/gradle_test.yml (Line: 50, Col: 23): Unexpected type of value '', expected type: Sequence.
+                # not sure what the problem is... the command ouptuts [test1, test2, test3] when run locally and on the
+                # github runner so I don't know why it doesn't work here
+                # figured it out, the output is a string so it needs to be parsed
+                test: ${{ fromJson(needs.get-tests.outputs.tests).split(',') }}
+                # this is a workaround for the above problem
+                # it splits the string into a list of strings
+                # and then runs each test in parallel
+                # fromJson returns "test1, test2, test3" so we split it into ["test1", "test2", "test3"]
         steps:
             - uses: actions/checkout@v3
             - name: Set up JDK 11
