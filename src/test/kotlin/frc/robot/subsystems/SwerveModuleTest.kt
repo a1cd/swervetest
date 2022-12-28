@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 
@@ -80,12 +81,14 @@ class SwerveModuleTest {
     }
 
     @Test
+    @Disabled
     fun move() {
         swerveModule!!.move(SwerveModuleState(1.0, Rotation2d(1.0)))
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
 
+    @Disabled
     @Test
     fun testMove() {
         swerveModule!!.move(1.0, 1.0)
