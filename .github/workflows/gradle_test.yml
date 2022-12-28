@@ -49,6 +49,8 @@ jobs:
       # print the output of the previous job
         - name: Print output
           run: echo ${{ needs.get-tests.outputs.tests }}
+        - name: Print output
+          run: echo ${{ fromJSON(needs.get-tests.outputs.tests) }}
   test:
     needs: get-tests
     runs-on: ubuntu-latest
