@@ -19,7 +19,7 @@ class Robot : TimedRobot() {
     /**
      * robot container
      */
-    private var robotContainer: RobotContainer? = null
+    var robotContainer: RobotContainer? = null
 
     override fun robotInit() {
         robotContainer = RobotContainer(xbox)
@@ -33,6 +33,10 @@ class Robot : TimedRobot() {
     override fun simulationInit() {
         robotContainer = RobotContainer(xbox)
 
+        // simulate swerve drivetrain dynamics
+        // - each turn universal encoder connected to a motor with gear ratios and stuff
+        // - each drive motor has its builtin encoder
+        // - each motor needs proper physics and force feedback and stuff simulated
     }
 
     override fun simulationPeriodic() {
@@ -78,3 +82,6 @@ class Robot : TimedRobot() {
         robotContainer?.autonomousPeriodic()
     }
 }
+
+// Q: do i need to use robotbase to start the robot simulation while testing?
+// A: no, you can just use the robot class directly

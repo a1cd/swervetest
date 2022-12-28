@@ -3,8 +3,8 @@ package frc.robot.subsystems
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import com.ctre.phoenix.sensors.CANCoder
-import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.MathUtil
+import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
