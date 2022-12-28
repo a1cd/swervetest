@@ -26,8 +26,7 @@ jobs:
             - name: Get tests
               run: ./gradlew getTests # run the getTests task which should generate a file called tests.txt
             - name: Set environment variable
-              env:
-                TESTS: ${{ (steps.get-tests.outputs.tests | fromJson).include }}
+              run: echo "::set-env name=TESTS::$(cat tests.txt)"
                 
     test:
         needs: get-tests
