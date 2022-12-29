@@ -19,6 +19,7 @@ jobs:
   # this test is a heavily modified version of the official gradle test so that it runs each test in parallel and then
   # aggregates the results all in github actions
   saveGradleCacheAndDaemon:
+    name: Save Gradle Cache and Daemon
     # this part caches gradle, gradle wrapper, gradle cache, and the gradle daemon so that it doesn't have to download
     # them for each job
     runs-on: ubuntu-latest
@@ -33,7 +34,7 @@ jobs:
           with:
             arguments: wrapper
   classes:
-    needs: saveGradleCacheAndDameon
+    needs: saveGradleCacheAndDaemon
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -51,9 +52,7 @@ jobs:
           name: classes
           path: build/classes/**/main
   testClasses:
-    needs:
-      - saveGradleCacheAndDaemon
-      - classes
+    needs: [saveGradleCacheAndDaemon, classes]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -77,9 +76,7 @@ jobs:
           #upload both the java test classes and the kotlin test classes
           path: build/classes/**/test
   javadoc:
-    needs:
-      saveGradleCacheAndDameon
-      classes
+    needs: [saveGradleCacheAndDaemon, classes, testClasses]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
