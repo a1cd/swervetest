@@ -78,9 +78,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: testClasses
+          #upload both the java test classes and the kotlin test classes
           path:
-            - build/classes/java/test
-            - build/classes/kotlin/test
+            build/classes/java/test
+            build/classes/kotlin/test
   javadoc:
     needs:
       saveGradleCacheAndDameon
