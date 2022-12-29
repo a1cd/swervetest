@@ -18,7 +18,7 @@ on:
 jobs:
   # this test is a heavily modified version of the official gradle test so that it runs each test in parallel and then
   # aggregates the results all in github actions
-  saveGradleCacheAndDameon:
+  saveGradleCacheAndDaemon:
     # this part caches gradle, gradle wrapper, gradle cache, and the gradle daemon so that it doesn't have to download
     # them for each job
     runs-on: ubuntu-latest
@@ -49,13 +49,11 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: classes
-          path:
-            build/classes/java/main
-            build/classes/kotlin/main
+          path: build/classes/**/main
   testClasses:
     needs:
-      saveGradleCacheAndDameon
-      classes
+      - saveGradleCacheAndDaemon
+      - classes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -67,9 +65,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: classes
-          path:
-            build/classes/java/main
-            build/classes/java/test
+          path: build/classes
       - name: Gradle Test Classes
         uses: gradle/gradle-build-action@v2
         with:
@@ -79,9 +75,7 @@ jobs:
         with:
           name: testClasses
           #upload both the java test classes and the kotlin test classes
-          path:
-            build/classes/java/test
-            build/classes/kotlin/test
+          path: build/classes/**/test
   javadoc:
     needs:
       saveGradleCacheAndDameon
@@ -97,9 +91,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: classes
-          path:
-            build/classes/java/main
-            build/classes/java/test
+          path: build/classes
       - name: Gradle Javadoc
         uses: gradle/gradle-build-action@v2
         with:
@@ -128,7 +120,7 @@ jobs:
           publish_branch: gh-pages
   get-tests:
     runs-on: ubuntu-latest
-    needs: saveGradleCacheAndDameon
+    needs: [saveGradleCacheAndDaemon, classes, testClasses]
     steps:
       - uses: actions/checkout@v3 # checkout the repo
       - name: Set up JDK 11 # set up java 11
@@ -138,6 +130,20 @@ jobs:
           distribution: 'temurin' # we want temurin because frc uses it
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew # make gradlew executable
+      - name: Download classes
+        uses: actions/download-artifact@v2
+        with:
+          name: classes
+          path: |
+            build/classes/java/main
+            build/classes/kotlin/main
+      - name: Download test classes
+        uses: actions/download-artifact@v2
+        with:
+          name: testClasses
+          path: |
+            build/classes/java/test
+            build/classes/kotlin/test
       - name: Get tests
         uses: gradle/gradle-build-action@v2
         with:
@@ -158,9 +164,7 @@ jobs:
       tests: ${{ steps.testid.outputs.tests }}
 
   test:
-    needs:
-      get-tests
-      testClasses
+    needs: [saveGradleCacheAndDaemon, classes, testClasses, get-tests]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -174,6 +178,20 @@ jobs:
           distribution: 'temurin'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Download classes
+        uses: actions/download-artifact@v2
+        with:
+          name: classes
+          path: |
+            build/classes/java/main
+            build/classes/kotlin/main
+      - name: Download test classes
+        uses: actions/download-artifact@v2
+        with:
+          name: testClasses
+          path: |
+            build/classes/java/test
+            build/classes/kotlin/test
       - name: Run tests
         # if it fails, this task should fail
         # if it skips, this task should skip
