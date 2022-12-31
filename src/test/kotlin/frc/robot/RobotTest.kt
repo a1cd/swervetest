@@ -4,15 +4,10 @@ import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.simulation.XboxControllerSim
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.RunCommand
-
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Assumptions.assumeTrue
-import org.junit.jupiter.api.DisplayName
 
 class RobotTest {
     // robot
@@ -132,8 +127,9 @@ class RobotTest {
             robot!!.robotContainer == null,
             "robot container is null"
         )
+        // motor speed is zero
         assumeTrue(
-            0.0==robot!!.robotContainer!!.drivetrain.fl.driveMotor.motorOutputPercent,
+            0.0==robot!!.robotContainer!!.drivetrain.fl.driveMotor.selectedSensorVelocity * 10.0 / 4096.0,
             "motor speed should be 0.0 before test"
         )
 
@@ -142,18 +138,18 @@ class RobotTest {
         xboxSim!!.setRawAxis(1, 0.5)
 
         // advance the simulation
-        for (i in 0..3) {
+        for (i in 0..5) {
             robot!!.robotPeriodic()
         }
 
-        // check motor percent outputs are not zero
+        // check motor percent outputs are not zero with some tolerance
         assumeFalse(
             robot!!.robotContainer == null,
             "robot container is null"
         )
         assumeFalse(
-            0.0 == robot!!.robotContainer!!.drivetrain.fl.driveMotor.motorOutputPercent,
-            "motor power should increase after moving xbox joystick"
+            0.01 > Math.abs(robot!!.robotContainer!!.drivetrain.fl.driveMotor.selectedSensorVelocity * 10.0 / 4096.0),
+            "motor speed should increase after moving xbox joystick"
         )
 
         // finally actually test to see if the robot properly disables
@@ -161,7 +157,7 @@ class RobotTest {
         robot!!.disabledInit()
 
         // advance the simulation
-        for (i in 0..5) {
+        for (i in 0..15) {
             robot!!.robotPeriodic()
             robot!!.disabledPeriodic()
         }
@@ -170,9 +166,10 @@ class RobotTest {
             "robot container is null"
         )
         assertEquals(
-            robot!!.robotContainer!!.drivetrain.fl.driveMotor.motorOutputPercent,
             0.0,
-            "motor power should be 0.0 after disabling"
+            robot!!.robotContainer!!.drivetrain.fl.driveMotor.selectedSensorVelocity * 10.0 / 4096.0,
+            0.01,
+            "motor power should be zero after disabling"
         )
     }
     @Test

@@ -1,13 +1,17 @@
 package frc.robot.subsystems
 
 
+import com.ctre.phoenix.motorcontrol.ControlMode
 import edu.wpi.first.hal.HAL
+import edu.wpi.first.hal.HALUtil
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.simulation.EncoderSim
-import edu.wpi.first.wpilibj.simulation.PWMSim
+import edu.wpi.first.wpilibj.simulation.SimHooks
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 import frc.robot.Constants
+import frc.robot.sim.PhysicsSim
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -21,38 +25,30 @@ class SwerveModuleTest {
     val DELTA = 1e-2 // acceptable deviation range
 
     var swerveModule: SwerveModule? = null
-    var simMotorDrive: PWMSim? = null
-    var simMotorAngle: PWMSim? = null
     var simEncoder: EncoderSim? = null
-
     @BeforeEach
     fun setUp() {
-        assert(
-            HAL.initialize(500, 0) // initialize the HAL, crash if failed
-        )
-
-        simMotorDrive = PWMSim(Constants.FrontLeftDriveMotor) // create our simulation PWM motor controller
-        simMotorAngle = PWMSim(Constants.FrontLeftSteerMotor) // create our simulation PWM motor controller
-        // create our simulation encoder at correct CAN index
+        // initialize the HAL to start the simulation.
+        // pass in 500 as the timeout in milliseconds and 0 as the device ID
+        assert(HAL.initialize(500, 0))
+        SimHooks.setHALRuntimeType(HALUtil.getHALRuntimeType())
+        // create our simulation encoder at the correct CAN index
         simEncoder = EncoderSim.createForIndex(Constants.FrontLeftEncoder)
+        // create our swerve module using the appropriate motor and encoder IDs and a Translation2d object
         swerveModule = SwerveModule(
             "fl",
             Constants.FrontLeftDriveMotor,
             Constants.FrontLeftSteerMotor,
             Constants.FrontLeftEncoder,
             Translation2d(1.0, 1.0)
-        ) // create our swerve module
-
-
-
-
+        )
     }
+
 
     @AfterEach
     fun tearDown() {
         swerveModule = null
-        simMotorDrive = null
-        simMotorAngle = null
+        PhysicsSim.instance.reset()
     }
 
     @Test
@@ -88,10 +84,24 @@ class SwerveModuleTest {
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
 
-    @Disabled
     @Test
     fun testMove() {
-        swerveModule!!.move(1.0, 1.0)
+        // before running the test, initialize the HAL and observe the user program teleop
+        HAL.initialize(500, 0)
+        HAL.observeUserProgramTeleop()
+        // run the simulation and the swerve module's move method 100 times
+        for (i in 0..100) {
+            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
+            // run the command scheduler and physics simulation
+            CommandScheduler.getInstance().run()
+            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
+            PhysicsSim.instance.run()
+            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
+            // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0
+            swerveModule!!.move(1.0, 1.0)
+        }
+        print(swerveModule)
+        // assert that the velocity and angle of the swerve module are as expected
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
