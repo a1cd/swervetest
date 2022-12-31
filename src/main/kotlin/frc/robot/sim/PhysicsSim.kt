@@ -121,6 +121,9 @@ class PhysicsSim {
             return (max - min) / 2 * sin(random().IEEErem(2 * 3.14159)) + (max + min) / 2
         }
 
+        /**
+         * random(max) is equivalent to random(0, max)
+         */
         fun random(max: Double): Double {
             return random(0.0, max)
         }

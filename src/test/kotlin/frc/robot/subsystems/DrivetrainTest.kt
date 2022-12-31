@@ -28,6 +28,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState
 import frc.robot.Constants
 import org.junit.jupiter.api.BeforeEach
 
+/**
+ * Test the drivetrain subsystem.
+ */
 class DrivetrainTest {
     class TestSwerveModule: SwerveModule {
         var moveCalled: Pair<Double, Double>? = null

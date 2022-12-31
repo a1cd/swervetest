@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
+/**
+ * Test the robot class.
+ */
 class RobotTest {
     // robot
     private var robot: Robot? = null

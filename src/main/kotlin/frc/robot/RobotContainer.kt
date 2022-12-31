@@ -11,6 +11,12 @@ import frc.robot.controls.ControlScheme
 import frc.robot.controls.DefaultControlScheme
 import frc.robot.subsystems.Drivetrain
 
+/**
+ * This class is where the bulk of the robot should be declared.  Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
+ * (including subsystems, commands, and button mappings) should be declared here.
+ */
 open class RobotContainer(
     xbox: XboxController = XboxController(0)
 ) {

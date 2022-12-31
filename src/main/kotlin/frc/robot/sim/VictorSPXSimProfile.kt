@@ -4,7 +4,6 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX
 import frc.robot.sim.PhysicsSim.Companion.random
 import frc.robot.sim.PhysicsSim.SimProfile
 
-// random()
 /**
  * Holds information about a simulated VictorSPX.
  * @param victor

@@ -3,6 +3,9 @@ package frc.robot.controls
 import edu.wpi.first.wpilibj2.command.button.Button
 import edu.wpi.first.wpilibj2.command.button.Trigger
 
+/**
+ * A control scheme is a set of buttons and triggers that are used to control the robot.
+ */
 interface ControlScheme {
     /**
      * the button to zero the encoders

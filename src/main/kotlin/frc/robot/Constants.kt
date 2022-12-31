@@ -2,6 +2,9 @@ package frc.robot
 
 import kotlin.math.PI
 
+/**
+ * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
+ */
 object Constants {
     // <-----> Drivetrain CAN IDs <----->
     const val FrontLeftDriveMotor = 10

@@ -6,6 +6,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants
 
+/**
+ * The drivetrain subsystem.
+ */
 class Drivetrain(
     val fl: SwerveModule = SwerveModule(
         "fl",

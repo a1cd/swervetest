@@ -1,16 +1,18 @@
 package frc.robot
 
 import edu.wpi.first.hal.HAL
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.simulation.XboxControllerSim
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 
+/**
+ * Test the robot container.
+ */
 class RobotContainerTest {
     var xboxSim: XboxControllerSim? = null
     var xboxController: XboxController? = null

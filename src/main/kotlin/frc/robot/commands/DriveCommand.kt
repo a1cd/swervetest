@@ -5,7 +5,9 @@ import frc.robot.controls.ControlScheme
 import frc.robot.subsystems.Drivetrain
 
 
-// new command base drive command class
+/**
+ * The default drive command. Arcade drive based on xbox controller inputs
+ */
 class DriveCommand(
     private val drivetrain: Drivetrain,
     private val forward: Double,

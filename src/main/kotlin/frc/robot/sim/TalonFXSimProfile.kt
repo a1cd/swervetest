@@ -5,8 +5,6 @@ import frc.robot.sim.PhysicsSim.Companion.random
 import frc.robot.sim.PhysicsSim.SimProfile
 import kotlin.math.abs
 
-// random()
-
 /**
  * Holds information about a simulated TalonFX.
  * @param falcon

@@ -16,6 +16,9 @@ import frc.robot.Constants.WHEEL_CIRCUMFRENCE
 import frc.robot.sim.PhysicsSim
 import kotlin.math.absoluteValue
 
+/**
+ * The drivetrain subsystem.
+ */
 open class SwerveModule(
     val moduleName: String,
     val driveId: Int,

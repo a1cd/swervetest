@@ -20,6 +20,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 
+/**
+ * Test the swerve module.
+ */
 class SwerveModuleTest {
 
     val DELTA = 1e-2 // acceptable deviation range
