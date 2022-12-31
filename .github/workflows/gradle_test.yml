@@ -9,9 +9,6 @@ name: gradle test
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [master]
-
   # any push to master
   push:
     branches:
