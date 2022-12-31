@@ -1,7 +1,6 @@
 package frc.robot.subsystems
 
 
-import com.ctre.phoenix.motorcontrol.ControlMode
 import edu.wpi.first.hal.HAL
 import edu.wpi.first.hal.HALUtil
 import edu.wpi.first.math.geometry.Rotation2d
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 
@@ -80,9 +78,16 @@ class SwerveModuleTest {
     }
 
     @Test
-    @Disabled
     fun move() {
         swerveModule!!.move(SwerveModuleState(1.0, Rotation2d(1.0)))
+        for (i in 0..100) {
+            // run the command scheduler and physics simulation
+            CommandScheduler.getInstance().run()
+            PhysicsSim.instance.run()
+            Thread.sleep(20)
+            // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0
+            swerveModule!!.move(SwerveModuleState(1.0, Rotation2d(1.0)))
+        }
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
@@ -90,20 +95,16 @@ class SwerveModuleTest {
     @Test
     fun testMove() {
         // before running the test, initialize the HAL and observe the user program teleop
-        HAL.initialize(500, 0)
         HAL.observeUserProgramTeleop()
         // run the simulation and the swerve module's move method 100 times
         for (i in 0..100) {
-            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
             // run the command scheduler and physics simulation
             CommandScheduler.getInstance().run()
-            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
             PhysicsSim.instance.run()
-            swerveModule!!.driveMotor.set(ControlMode.PercentOutput, 1.0)
+            Thread.sleep(20)
             // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0
             swerveModule!!.move(1.0, 1.0)
         }
-        print(swerveModule)
         // assert that the velocity and angle of the swerve module are as expected
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)

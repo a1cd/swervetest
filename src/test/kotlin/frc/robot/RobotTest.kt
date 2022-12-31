@@ -106,10 +106,14 @@ class RobotTest {
         val testCommand = TestCommand().apply {
             CommandScheduler.getInstance().schedule(this)
         }
-        assumeTrue(CommandScheduler.getInstance().timeSinceScheduled(testCommand) == 0.0)
+        assumeTrue((CommandScheduler.getInstance().timeSinceScheduled(testCommand) == 0.0).apply {
+            println("timeSinceScheduled: ${CommandScheduler.getInstance().timeSinceScheduled(testCommand)}")
+        })
         // test robot periodic
-        this.robot!!.robotPeriodic()
-
+        for (i in 0..10) {
+            this.robot!!.robotPeriodic()
+            Thread.sleep(100)
+        }
         // -- after --
         assertTrue(CommandScheduler.getInstance().timeSinceScheduled(testCommand) > 0.0001)
         assertTrue(testCommand.hasExecuted)
@@ -143,6 +147,7 @@ class RobotTest {
         // advance the simulation
         for (i in 0..5) {
             robot!!.robotPeriodic()
+            Thread.sleep(100)
         }
 
         // check motor percent outputs are not zero with some tolerance
@@ -163,6 +168,7 @@ class RobotTest {
         for (i in 0..15) {
             robot!!.robotPeriodic()
             robot!!.disabledPeriodic()
+            Thread.sleep(100)
         }
         assumeFalse(
             robot!!.robotContainer==null,
