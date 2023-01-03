@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants.DRIVE_GEAR_RATIO
 import frc.robot.Constants.WHEEL_CIRCUMFRENCE
 import frc.robot.sim.PhysicsSim
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 /**
@@ -47,8 +48,9 @@ open class SwerveModule(
 
     val enc = CANCoder(encId).apply {
         configSensorDirection(false)
+        PhysicsSim.instance.addCANCoder(this)
     }
-
+    private var isSim: Boolean = false
 
     val DRIVE_P = 0.1
     val DRIVE_I = 0.01
@@ -64,7 +66,15 @@ open class SwerveModule(
         enableContinuousInput(-Math.PI, Math.PI)
     }
 
-    val angle get() = MathUtil.angleModulus(Units.degreesToRadians(enc.position))
+    val angle: Double
+        get() {
+            // if simulation
+            return if (isSim) {
+                MathUtil.angleModulus(Units.degreesToRadians(steerMotor.sensorCollection.integratedSensorPosition/4096.0*360.0))
+            } else {
+                MathUtil.angleModulus(Units.degreesToRadians(enc.position))
+            }
+        }
 
     val velocity get() = (driveMotor.selectedSensorVelocity/2048.0) * WHEEL_CIRCUMFRENCE * 10 / DRIVE_GEAR_RATIO
 
@@ -83,8 +93,7 @@ open class SwerveModule(
         if(drive.absoluteValue > 0.1) steerMotor.set(-MathUtil.clamp(anglePid.calculate( this.angle, angle), -0.5, 0.5))
         else steerMotor.stopMotor()
 
-        driveMotor.setNeutralMode(m_brakeMode)
-        steerMotor.setNeutralMode(m_brakeMode)
+        brakeMode = abs(anglePid.positionError) < 0.05 && abs(drivePid.positionError) < 0.05
     }
 
     /**
@@ -131,12 +140,15 @@ open class SwerveModule(
     override fun simulationPeriodic() {
         SmartDashboard.putNumber("${moduleName} ang", this.angle)
         SmartDashboard.putNumber("${moduleName} vel", this.velocity)
+        enc.position = enc.position + (steerMotor.selectedSensorVelocity/2048.0) * 10
+
         super.simulationPeriodic()
     }
 
     open fun stop() {
         driveMotor.stopMotor()
-        steerMotor.stopMotor()
+        // point at center of robot based on module location
+        steerMotor.set(anglePid.calculate(angle, Math.atan2(translation2d.y, translation2d.x)))
     }
 
     override fun toString(): String {

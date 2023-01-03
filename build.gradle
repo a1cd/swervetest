@@ -45,12 +45,11 @@ deploy {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnit()
     // This is needed to run tests on the roboRIO
     testLogging {
         events "passed", "skipped", "failed"
     }
-
 }
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 
@@ -67,8 +66,8 @@ def includeDesktopSupport = true
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+//    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+//    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -84,7 +83,7 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
-//    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 }
 

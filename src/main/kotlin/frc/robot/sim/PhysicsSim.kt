@@ -3,6 +3,7 @@ package frc.robot.sim
 import com.ctre.phoenix.motorcontrol.can.TalonFX
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
+import com.ctre.phoenix.sensors.CANCoder
 import java.lang.Math.random
 import kotlin.math.IEEErem
 import kotlin.math.sin
@@ -79,6 +80,10 @@ class PhysicsSim {
 
     fun reset() {
         simProfiles.clear()
+    }
+
+    fun addCANCoder(canCoder: CANCoder) {
+        simProfiles.add(CANCoderSimProfile(canCoder))
     }
 
     /**

@@ -26,13 +26,26 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import frc.robot.Constants
-import org.junit.jupiter.api.BeforeEach
+import org.junit.Assert
+import org.junit.Assert.assertNotNull
+import org.junit.Before
+import org.junit.Test
+import java.util.Arrays
 
 /**
  * Test the drivetrain subsystem.
  */
 class DrivetrainTest {
-    class TestSwerveModule: SwerveModule {
+    class TestSwerveModule
+    /**
+     * construct from a swerve module
+     */(module: SwerveModule) : SwerveModule(
+        module.moduleName,
+        module.driveId,
+        module.steerId,
+        module.encId,
+        module.translation2d
+    ) {
         var moveCalled: Pair<Double, Double>? = null
         var stopCalled: Int = 0
         var zeroEncoderCalled: Int = 0
@@ -44,9 +57,9 @@ class DrivetrainTest {
             super.move(drive, angle)
             moveCalled = Pair(drive, angle)
         }
-        override fun move(state: SwerveModuleState) {
-            super.move(state)
-            moveCalled = Pair(state.speedMetersPerSecond, state.angle.radians)
+        override fun move(swerveModuleState: SwerveModuleState) {
+            super.move(swerveModuleState)
+            moveCalled = Pair(swerveModuleState.speedMetersPerSecond, swerveModuleState.angle.radians)
         }
         override fun stop() {
             super.stop()
@@ -69,27 +82,20 @@ class DrivetrainTest {
                 brakeModeSet += 1
                 super.brakeMode = value
             }
-
-        /**
-         * construct from a swerve module
-         */
-        constructor(module: SwerveModule): super(
-            module.moduleName,
-            module.driveId,
-            module.steerId,
-            module.encId,
-            module.translation2d
-        )
     }
     val fl = TestSwerveModule(SwerveModule("fl", Constants.FrontLeftDriveMotor, Constants.FrontLeftSteerMotor, Constants.FrontLeftEncoder, Translation2d(1.0, 1.0)))
     val fr = TestSwerveModule(SwerveModule("fr", Constants.FrontRightDriveMotor, Constants.FrontRightSteerMotor, Constants.FrontRightEncoder, Translation2d(1.0, 1.0)))
     val bl = TestSwerveModule(SwerveModule("bl", Constants.BackLeftDriveMotor, Constants.BackLeftSteerMotor, Constants.BackLeftEncoder, Translation2d(1.0, 1.0)))
     val br = TestSwerveModule(SwerveModule("br", Constants.BackRightDriveMotor, Constants.BackRightSteerMotor, Constants.BackRightEncoder, Translation2d(1.0, 1.0)))
+    val modules = listOf(fl, fr, bl, br)
     val drivetrain = Drivetrain(fl, fr, bl, br)
-    @BeforeEach
-    fun beforeEach() {
-
+    @Test
+    fun testMove() {
+        drivetrain.move(1.0, 0.0, 0.0)
+        modules.forEach { module ->
+            module.moveCalled?.first?.let { Assert.assertEquals(1.0, it, 0.05) }
+            module.moveCalled?.second?.let { Assert.assertEquals(0.0, it, 0.05) }
+            assertNotNull("move() was not called on module ${module.moduleName}", module.moveCalled)
+        }
     }
-
-
 }

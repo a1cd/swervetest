@@ -39,10 +39,13 @@ open class RobotContainer(
             .whileActiveContinuous(RunCommand({
                 DriveCommand(drivetrain, this).execute()
             }, drivetrain))
-        // this actually took forever to fix
-        // it was a problem with the control scheme, it was not sending updated values
-        // to the drive command so it was always using the starting values
-        // i fixed it by making the drive command take in the control scheme as a parameter
+        forewardThresholdTrigger
+            .or(strafeThresholdTrigger)
+            .or(rotationThresholdTrigger)
+            .negate()
+            .whileActiveOnce(RunCommand({
+                DriveCommand(drivetrain, 0.0, 0.0, 0.0).execute()
+            }, drivetrain))
     }
 
     /**

@@ -4,11 +4,17 @@ import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.simulation.XboxControllerSim
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.RunCommand
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assumptions.assumeFalse
-import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.hamcrest.CoreMatchers.nullValue
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Assume.assumeThat
+import org.junit.Before
+import org.junit.Test
+import org.junit.Assume.assumeFalse as jAssumeFalse
+import org.junit.Assume.assumeTrue as jAssumeTrue
 
+private fun assumeFalse(condition: Boolean, message: String) = jAssumeFalse(message, condition)
+private fun assumeTrue(condition: Boolean, message: String) = jAssumeTrue(message, condition)
 /**
  * Test the robot class.
  */
@@ -59,7 +65,7 @@ class RobotTest {
         }
     }
     private var testRobotContainer: TestRobotContainer? = null
-    @BeforeEach
+    @Before
     fun setUp() {
         // setup robot simulation
         robot = Robot()
@@ -69,7 +75,7 @@ class RobotTest {
         // setup robot container
         testRobotContainer = TestRobotContainer(xboxController!!)
     }
-    @AfterEach
+    @After
     fun tearDown() {
         // stop robot simulation
         this.robot!!.disabledInit()
@@ -81,16 +87,19 @@ class RobotTest {
         this.testRobotContainer = null
     }
     @Test
-    @DisplayName("test that robot container is initialized")
+//    @DisplayName("test that robot container is initialized")
     fun robotInit() {
-        Assumptions.assumingThat(this.robot!!.robotContainer==null) {
-            // test robot init
-            this.robot!!.robotInit()
-            assertNotNull(this.robot!!.robotContainer)
-        }
+        assumeThat(
+            "robot container should be null",
+            this.robot!!.robotContainer,
+            nullValue()
+        )
+        // test robot init
+        this.robot!!.robotInit()
+        assertNotNull(this.robot!!.robotContainer)
     }
     @Test
-    @DisplayName("test robot periodic - check that robot advances command scheduler")
+//    @DisplayName("test robot periodic - check that robot advances command scheduler")
     fun robotPeriodic() {
         // -- before --
         // test command scheduler using a command and time since it was scheduled
@@ -106,9 +115,10 @@ class RobotTest {
         val testCommand = TestCommand().apply {
             CommandScheduler.getInstance().schedule(this)
         }
-        assumeTrue((CommandScheduler.getInstance().timeSinceScheduled(testCommand) == 0.0).apply {
-            println("timeSinceScheduled: ${CommandScheduler.getInstance().timeSinceScheduled(testCommand)}")
-        })
+        assumeTrue(
+            CommandScheduler.getInstance().timeSinceScheduled(testCommand) <= 0.0,
+            "test command should not have executed and should be zero time since scheduled"
+        )
         // test robot periodic
         for (i in 0..10) {
             this.robot!!.robotPeriodic()
@@ -119,7 +129,7 @@ class RobotTest {
         assertTrue(testCommand.hasExecuted)
     }
     @Test
-    @DisplayName("test motor power is zero when disabled")
+//    @DisplayName("test motor power is zero when disabled")
     fun disabledInit() {
         // advance simulation time
         robot!!.robotInit()
@@ -175,120 +185,120 @@ class RobotTest {
             "robot container is null"
         )
         assertEquals(
+            "motor power should be zero after disabling",
             0.0,
             robot!!.robotContainer!!.drivetrain.fl.driveMotor.selectedSensorVelocity * 10.0 / 4096.0,
-            0.01,
-            "motor power should be zero after disabling"
+            0.01
         )
     }
     @Test
-    @DisplayName("Test robot container disabled init is called when robot is disabled")
+//    @DisplayName("Test robot container disabled init is called when robot is disabled")
     fun disabledInitSubcallTest() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.disabledInit()
         assertEquals(
+            "disabledInit() should call robotContainer.disabledInit()",
             "disabledInit",
             testRobotContainer!!.lastCommand,
-            "disabledInit() should call robotContainer.disabledInit()"
         )
     }
     @Test
-    @DisplayName("Test robot container disabled periodic is called when robot is disabled")
+//    @DisplayName("Test robot container disabled periodic is called when robot is disabled")
     fun disabledPeriodic() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.disabledPeriodic()
         assertEquals(
+            "disabledPeriodic() should call robotContainer.disabledPeriodic()",
             "disabledPeriodic",
             testRobotContainer!!.lastCommand,
-            "disabledPeriodic() should call robotContainer.disabledPeriodic()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.autonomousInit() called when autonomousInit() is called")
+//    @DisplayName("Test robotContainer.autonomousInit() called when autonomousInit() is called")
     fun testInit() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.testInit()
         assertEquals(
+            "testInit() should call robotContainer.testInit()",
             "testInit",
             testRobotContainer!!.lastCommand,
-            "testInit() should call robotContainer.testInit()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.testPeriodic() called when testPeriodic() is called")
+//    @DisplayName("Test robotContainer.testPeriodic() called when testPeriodic() is called")
     fun testPeriodic() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.testPeriodic()
         assertEquals(
+            "testPeriodic() should call robotContainer.testPeriodic()",
             "testPeriodic",
             testRobotContainer!!.lastCommand,
-            "testPeriodic() should call robotContainer.testPeriodic()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.autonomousInit() called when autonomousInit() is called")
+//    @DisplayName("Test robotContainer.autonomousInit() called when autonomousInit() is called")
     fun autonomousInit() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.autonomousInit()
         assertEquals(
+            "autonomousInit() should call robotContainer.autonomousInit()",
             "autonomousInit",
             testRobotContainer!!.lastCommand,
-            "autonomousInit() should call robotContainer.autonomousInit()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.autonomousPeriodic() called when autonomousPeriodic() is called")
+//    @DisplayName("Test robotContainer.autonomousPeriodic() called when autonomousPeriodic() is called")
     fun autonomousPeriodic() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.autonomousPeriodic()
         assertEquals(
+            "autonomousPeriodic() should call robotContainer.autonomousPeriodic()",
             "autonomousPeriodic",
             testRobotContainer!!.lastCommand,
-            "autonomousPeriodic() should call robotContainer.autonomousPeriodic()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.teleopInit() called when teleopInit() is called")
+//    @DisplayName("Test robotContainer.teleopInit() called when teleopInit() is called")
     fun teleopInit() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.teleopInit()
         assertEquals(
+            "teleopInit() should call robotContainer.teleopInit()",
             "teleopInit",
             testRobotContainer!!.lastCommand,
-            "teleopInit() should call robotContainer.teleopInit()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.teleopPeriodic() called when teleopPeriodic() is called")
+//    @DisplayName("Test robotContainer.teleopPeriodic() called when teleopPeriodic() is called")
     fun teleopPeriodic() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.teleopPeriodic()
         assertEquals(
+            "teleopPeriodic() should call robotContainer.teleopPeriodic()",
             "teleopPeriodic",
             testRobotContainer!!.lastCommand,
-            "teleopPeriodic() should call robotContainer.teleopPeriodic()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.robotPeriodic() called when robotPeriodic() is called")
+//    @DisplayName("Test robotContainer.robotPeriodic() called when robotPeriodic() is called")
     fun simulationPeriodic() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.simulationPeriodic()
         assertEquals(
+            "simulationPeriodic() should call robotContainer.simulationPeriodic()",
             "simulationPeriodic",
             testRobotContainer!!.lastCommand,
-            "simulationPeriodic() should call robotContainer.simulationPeriodic()"
         )
     }
     @Test
-    @DisplayName("Test robotContainer.robotPeriodic() called when robotPeriodic() is called")
+//    @DisplayName("Test robotContainer.robotPeriodic() called when robotPeriodic() is called")
     fun simulationInit() {
         this.robot!!.robotContainer = testRobotContainer
         this.robot!!.simulationInit()
         assertEquals(
+            "simulationInit() should have set robotContainer to the normal robotContainer.",
             RobotContainer(xboxController!!).javaClass,
-            robot!!.robotContainer?.javaClass,
-            "simulationInit() should have set robotContainer to the normal robotContainer."
+            robot!!.robotContainer?.javaClass
         )
     }
 }
