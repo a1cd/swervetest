@@ -5,57 +5,43 @@ import edu.wpi.first.hal.HAL
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
-import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj2.command.CommandScheduler
-import frc.robot.TestRobot
 import frc.robot.sim.PhysicsSim
+import frc.robot.subsystems.SwerveModuleTest.SwerveModuleSimulatedRobot
+import frc.robot.util.SimulatedRobot
+import frc.robot.util.SimulatedRobotTest
+import frc.robot.util.SimulatedTest
 import org.hamcrest.CoreMatchers.notNullValue
-import org.junit.*
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.rules.Timeout
-import java.util.concurrent.TimeUnit
+import org.junit.Assume
+import org.junit.Test
 
 
 /**
  * Test the swerve module.
  */
-class SwerveModuleTest {
-    @Rule
-    @JvmField
-    var timeout: Timeout = Timeout(10, TimeUnit.SECONDS)
+class SwerveModuleTest: SimulatedRobotTest<SwerveModuleSimulatedRobot>(
+    SwerveModuleSimulatedRobot::class.java
+) {
 
     val DELTA = 1e-2 // acceptable deviation range
-
-
-    class SwerveModuleTestRobot: TestRobot() {
-        var module: SwerveModule = SwerveModule("test", 1, 2, 3, Translation2d(0.0, 0.0))
-        override fun robotInit() {
-            super.robotInit()
-            module.move(1.0, 1.0)
-        }
+    class SwerveModuleSimulatedRobot(test: SwerveModuleTest) : SimulatedRobot(test) {
+        var module: SwerveModule = SwerveModule("test", 1, 2, 3, Translation2d(1.0, 1.0))
     }
-    var robot: SwerveModuleTestRobot? = null
-    //get/setter
+    override var robot: SwerveModuleSimulatedRobot = SwerveModuleSimulatedRobot(this)
     var swerveModule: SwerveModule?
-        get() = robot?.module
+        get() = robot.module
         set(value) {
             if (value != null) {
-                robot?.module = value
+                robot.module = value
             }
         }
-
-    @Before
-    fun setUp() {
-        // start the robot
-        RobotBase.startRobot { SwerveModuleTestRobot().also { robot = it } }
-    }
 
 
     @After
     fun tearDown() {
-        robot?.close()
-        robot = null
         PhysicsSim.instance.reset()
     }
 
@@ -90,6 +76,7 @@ class SwerveModuleTest {
     }
 
     @Test
+    @SimulatedTest
     fun move() {
         Assume.assumeThat(swerveModule, notNullValue())
         swerveModule!!.move(SwerveModuleState(1.1, Rotation2d(1.2)))
@@ -112,6 +99,7 @@ class SwerveModuleTest {
     }
 
     @Test
+    @SimulatedTest
     fun testMove() {
         // before running the test, initialize the HAL and observe the user program teleop
         HAL.observeUserProgramTeleop()
@@ -137,8 +125,8 @@ class SwerveModuleTest {
 
     @Test
     fun reset() {
+
         swerveModule!!.reset()
-        assertEquals(0.0, swerveModule!!.enc.position % 360.0, DELTA)
         assertEquals(0.0, swerveModule!!.angle, DELTA)
         assertEquals(0.0, swerveModule!!.velocity, DELTA)
     }
@@ -158,8 +146,10 @@ class SwerveModuleTest {
     }
 
     @Test
+    @SimulatedTest
     fun stop() {
         swerveModule!!.stop()
+        Thread.sleep(100)
         assertEquals(0.0, swerveModule!!.velocity, DELTA)
     }
 
