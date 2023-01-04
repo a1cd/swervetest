@@ -6,35 +6,41 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants
 
-class Drivetrain: SubsystemBase() {
-    val fl = SwerveModule(
+/**
+ * The drivetrain subsystem.
+ */
+class Drivetrain(
+    val fl: SwerveModule = SwerveModule(
         "fl",
         Constants.FrontLeftDriveMotor,
         Constants.FrontLeftSteerMotor,
         Constants.FrontLeftEncoder,
         Translation2d(.32, .32)
-    )
-    val fr = SwerveModule(
+    ),
+    val fr: SwerveModule = SwerveModule(
         "fr",
         Constants.FrontRightDriveMotor,
         Constants.FrontRightSteerMotor,
         Constants.FrontRightEncoder,
         Translation2d(.32, -.32)
-    )
-    val bl = SwerveModule(
+    ),
+    val bl: SwerveModule = SwerveModule(
         "bl",
         Constants.BackLeftDriveMotor,
         Constants.BackLeftSteerMotor,
         Constants.BackLeftEncoder,
         Translation2d(-.32, -.32)
-    )
-    val br = SwerveModule(
+    ),
+    val br: SwerveModule = SwerveModule(
         "br",
         Constants.BackRightDriveMotor,
         Constants.BackRightSteerMotor,
         Constants.BackRightEncoder,
         Translation2d(-.32, .32)
     )
+): SubsystemBase() {
+
+
 
     val modules = arrayOf(fl, fr, br, bl)
 
@@ -77,8 +83,4 @@ class Drivetrain: SubsystemBase() {
         set(value) {
             modules.forEach { it.brakeMode = value }
         }
-
-    override fun periodic() {
-        modules.forEach { it.periodic() }
-    }
 }

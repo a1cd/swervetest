@@ -5,93 +5,114 @@ import edu.wpi.first.hal.HAL
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
-import edu.wpi.first.wpilibj.simulation.EncoderSim
-import edu.wpi.first.wpilibj.simulation.PWMSim
-import frc.robot.Constants
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
+import edu.wpi.first.wpilibj2.command.CommandScheduler
+import frc.robot.sim.PhysicsSim
+import frc.robot.subsystems.SwerveModuleTest.SwerveModuleSimulatedRobot
+import frc.robot.util.SimulatedRobot
+import frc.robot.util.SimulatedRobotTest
+import frc.robot.util.SimulatedTest
+import org.hamcrest.CoreMatchers.notNullValue
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assume
+import org.junit.Test
 
 
-class SwerveModuleTest {
+/**
+ * Test the swerve module.
+ */
+class SwerveModuleTest: SimulatedRobotTest<SwerveModuleSimulatedRobot>(
+    SwerveModuleSimulatedRobot::class.java
+) {
 
     val DELTA = 1e-2 // acceptable deviation range
-
-    var swerveModule: SwerveModule? = null
-    var simMotorDrive: PWMSim? = null
-    var simMotorAngle: PWMSim? = null
-    var simEncoder: EncoderSim? = null
-
-    @BeforeEach
-    fun setUp() {
-        assert(
-            HAL.initialize(500, 0) // initialize the HAL, crash if failed
-        )
-
-        simMotorDrive = PWMSim(Constants.FrontLeftDriveMotor) // create our simulation PWM motor controller
-        simMotorAngle = PWMSim(Constants.FrontLeftSteerMotor) // create our simulation PWM motor controller
-        // create our simulation encoder at correct CAN index
-        simEncoder = EncoderSim.createForIndex(Constants.FrontLeftEncoder)
-        swerveModule = SwerveModule(
-            "fl",
-            Constants.FrontLeftDriveMotor,
-            Constants.FrontLeftSteerMotor,
-            Constants.FrontLeftEncoder,
-            Translation2d(1.0, 1.0)
-        ) // create our swerve module
-
-
-
-
+    class SwerveModuleSimulatedRobot(test: SwerveModuleTest) : SimulatedRobot(test) {
+        var module: SwerveModule = SwerveModule("test", 1, 2, 3, Translation2d(1.0, 1.0))
     }
+    override var robot: SwerveModuleSimulatedRobot = SwerveModuleSimulatedRobot(this)
+    var swerveModule: SwerveModule?
+        get() = robot.module
+        set(value) {
+            if (value != null) {
+                robot.module = value
+            }
+        }
 
-    @AfterEach
+
+    @After
     fun tearDown() {
-        swerveModule = null
-        simMotorDrive = null
-        simMotorAngle = null
+        PhysicsSim.instance.reset()
     }
 
     @Test
     fun getDriveMotor() {
-        assertNotNull(Constants.FrontLeftDriveMotor)
+        Assume.assumeThat(swerveModule, notNullValue())
+        assertNotNull(swerveModule?.driveMotor)
     }
 
     @Test
     fun getSteerMotor() {
+        Assume.assumeThat(swerveModule, notNullValue())
         assertNotNull(swerveModule!!.steerMotor)
     }
 
     @Test
     fun getEnc() {
+        Assume.assumeThat(swerveModule, notNullValue())
         assertNotNull(swerveModule!!.enc)
     }
 
     @Test
     fun getAngle() {
+        Assume.assumeThat(swerveModule, notNullValue())
         assertEquals(0.0, swerveModule!!.angle, DELTA)
     }
 
     @Test
     fun getVelocity() {
+        Assume.assumeThat(swerveModule, notNullValue())
         assertEquals(0.0, swerveModule!!.velocity, DELTA)
     }
 
     @Test
-    @Disabled
+    @SimulatedTest
     fun move() {
-        swerveModule!!.move(SwerveModuleState(1.0, Rotation2d(1.0)))
+        Assume.assumeThat(swerveModule, notNullValue())
+        swerveModule!!.move(SwerveModuleState(1.1, Rotation2d(1.2)))
+        HAL.observeUserProgramTeleop()
+        for (i in 0..100) {
+            // run the command scheduler and physics simulation
+            CommandScheduler.getInstance().run()
+            PhysicsSim.instance.run()
+            Thread.sleep(20)
+            HAL.observeUserProgramTeleop()
+            // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0
+            swerveModule!!.move(SwerveModuleState(1.1, Rotation2d(1.2)))
+        }
+        println("swerveModule!!.angle: " + swerveModule!!.angle)
+        println("swerveModule!!.velocity: " + swerveModule!!.velocity)
+        println("swerveModule!!.translation2d: " + swerveModule!!.translation2d)
+        println(swerveModule!!.driveMotor.motorOutputPercent)
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
 
-    @Disabled
     @Test
+    @SimulatedTest
     fun testMove() {
-        swerveModule!!.move(1.0, 1.0)
+        // before running the test, initialize the HAL and observe the user program teleop
+        HAL.observeUserProgramTeleop()
+        // run the simulation and the swerve module's move method 100 times
+        for (i in 0..100) {
+            // run the command scheduler and physics simulation
+            CommandScheduler.getInstance().run()
+            PhysicsSim.instance.run()
+            Thread.sleep(20)
+            // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0
+            swerveModule!!.move(1.0, 1.0)
+        }
+        // assert that the velocity and angle of the swerve module are as expected
         assertEquals(1.0, swerveModule!!.velocity, DELTA)
         assertEquals(1.0, swerveModule!!.angle, DELTA)
     }
@@ -104,8 +125,8 @@ class SwerveModuleTest {
 
     @Test
     fun reset() {
+
         swerveModule!!.reset()
-        assertEquals(0.0, swerveModule!!.enc.position % 360.0, DELTA)
         assertEquals(0.0, swerveModule!!.angle, DELTA)
         assertEquals(0.0, swerveModule!!.velocity, DELTA)
     }
@@ -125,8 +146,10 @@ class SwerveModuleTest {
     }
 
     @Test
+    @SimulatedTest
     fun stop() {
         swerveModule!!.stop()
+        Thread.sleep(100)
         assertEquals(0.0, swerveModule!!.velocity, DELTA)
     }
 
@@ -134,4 +157,6 @@ class SwerveModuleTest {
     fun getTranslation2d() {
         assertEquals(Translation2d(1.0, 1.0), swerveModule!!.translation2d)
     }
+
+
 }

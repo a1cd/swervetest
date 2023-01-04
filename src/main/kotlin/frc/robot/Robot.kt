@@ -3,12 +3,10 @@ package frc.robot
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import frc.robot.sim.PhysicsSim
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
+ * Robot is the main class of the robot. It is the entry point of the program.
  */
 class Robot : TimedRobot() {
     /**
@@ -41,6 +39,7 @@ class Robot : TimedRobot() {
 
     override fun simulationPeriodic() {
         robotContainer?.simulationPeriodic()
+        PhysicsSim.instance.run();
     }
 
     /** This function is called once when teleop is enabled. */

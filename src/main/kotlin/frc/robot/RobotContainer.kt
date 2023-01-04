@@ -11,6 +11,12 @@ import frc.robot.controls.ControlScheme
 import frc.robot.controls.DefaultControlScheme
 import frc.robot.subsystems.Drivetrain
 
+/**
+ * This class is where the bulk of the robot should be declared.  Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
+ * (including subsystems, commands, and button mappings) should be declared here.
+ */
 open class RobotContainer(
     xbox: XboxController = XboxController(0)
 ) {
@@ -33,10 +39,13 @@ open class RobotContainer(
             .whileActiveContinuous(RunCommand({
                 DriveCommand(drivetrain, this).execute()
             }, drivetrain))
-        // this actually took forever to fix
-        // it was a problem with the control scheme, it was not sending updated values
-        // to the drive command so it was always using the starting values
-        // i fixed it by making the drive command take in the control scheme as a parameter
+        forewardThresholdTrigger
+            .or(strafeThresholdTrigger)
+            .or(rotationThresholdTrigger)
+            .negate()
+            .whileActiveOnce(RunCommand({
+                DriveCommand(drivetrain, 0.0, 0.0, 0.0).execute()
+            }, drivetrain))
     }
 
     /**

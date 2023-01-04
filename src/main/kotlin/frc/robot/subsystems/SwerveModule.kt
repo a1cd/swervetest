@@ -13,39 +13,68 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants.DRIVE_GEAR_RATIO
 import frc.robot.Constants.WHEEL_CIRCUMFRENCE
+import frc.robot.sim.PhysicsSim
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-class SwerveModule(
-    private val name: String,
-    driveId: Int,
-    steerId: Int,
-    encId: Int,
+/**
+ * The drivetrain subsystem.
+ */
+open class SwerveModule(
+    val moduleName: String,
+    val driveId: Int,
+    val steerId: Int,
+    val encId: Int,
     val translation2d: Translation2d,
 ): SubsystemBase() {
 
-
-    val driveMotor = WPI_TalonFX(driveId).apply { 
+    val driveMotor = WPI_TalonFX(driveId).apply {
         configFactoryDefault()
+        PhysicsSim.instance.addTalonFX(
+            this,
+            DRIVE_MOTOR_ACCELERATION,
+            DRIVE_MOTOR_TOP_SPEED
+        )
     }
 
     val steerMotor = WPI_TalonFX(steerId).apply {
         configFactoryDefault()
+        PhysicsSim.instance.addTalonFX(
+            this,
+            TURN_MOTOR_ACCELERATION,
+            TURN_MOTOR_TOP_SPEED
+        )
     }
 
     val enc = CANCoder(encId).apply {
         configSensorDirection(false)
+        PhysicsSim.instance.addCANCoder(this)
     }
+    private var isSim: Boolean = false
 
-
+    val DRIVE_P = 0.1
+    val DRIVE_I = 0.01
+    val DRIVE_D = 0.1
 
     //should adjust these gains or characterize since they are a little slow
-    val drivePid = PIDController(0.3,0.0,0.0)
-
+    private val drivePid = PIDController(DRIVE_P, DRIVE_I, DRIVE_D)
+    val ANGLE_P = 0.1
+    val ANGLE_I = 0.01
+    val ANGLE_D = 0.1
     //should adjust these gains or characterize since they are a little slow
-    val anglePid = PIDController(0.3,0.02,0.01).apply {
+    val anglePid = PIDController(ANGLE_P, ANGLE_I, ANGLE_D).apply {
         enableContinuousInput(-Math.PI, Math.PI)
     }
-    val angle get() = MathUtil.angleModulus(Units.degreesToRadians(enc.position))
+
+    val angle: Double
+        get() {
+            // if simulation
+            return if (isSim) {
+                MathUtil.angleModulus(Units.degreesToRadians(steerMotor.sensorCollection.integratedSensorPosition/4096.0*360.0))
+            } else {
+                MathUtil.angleModulus(Units.degreesToRadians(enc.position))
+            }
+        }
 
     val velocity get() = (driveMotor.selectedSensorVelocity/2048.0) * WHEEL_CIRCUMFRENCE * 10 / DRIVE_GEAR_RATIO
 
@@ -55,68 +84,94 @@ class SwerveModule(
      * @param drive the speed of the module
      * @param angle angle in radians of the module
      */
-    fun move(drive: Double, angle: Double) {
+    open fun move(drive: Double, angle: Double) {
 
-        SmartDashboard.putNumber("${name} error", anglePid.positionError)
-        SmartDashboard.putNumber("${name} ang", this.angle)
+        SmartDashboard.putNumber("$moduleName error", anglePid.positionError)
+        SmartDashboard.putNumber("$moduleName ang", this.angle)
 
         driveMotor.set(drivePid.calculate(velocity,drive))
         if(drive.absoluteValue > 0.1) steerMotor.set(-MathUtil.clamp(anglePid.calculate( this.angle, angle), -0.5, 0.5))
         else steerMotor.stopMotor()
 
-        driveMotor.setNeutralMode(m_brakeMode)
-        steerMotor.setNeutralMode(m_brakeMode)
+        brakeMode = abs(anglePid.positionError) < 0.05 && abs(drivePid.positionError) < 0.05
     }
 
     /**
      * @param swerveModuleState the state of the module
      */
-    fun move(swerveModuleState: SwerveModuleState) {
+    open fun move(swerveModuleState: SwerveModuleState) {
         val optimizedState = SwerveModuleState.optimize(swerveModuleState, Rotation2d(angle) )
 
-        SmartDashboard.putNumber("${name} desired speed", optimizedState.speedMetersPerSecond)
-        SmartDashboard.putNumber("${name} desired ang", optimizedState.angle.degrees)
-        SmartDashboard.putNumber("${name} ang", this.angle)
-        SmartDashboard.putNumber("${name} vel", this.velocity)
+        SmartDashboard.putNumber("${moduleName} desired speed", optimizedState.speedMetersPerSecond)
+        SmartDashboard.putNumber("${moduleName} desired ang", optimizedState.angle.degrees)
+        SmartDashboard.putNumber("${moduleName} ang", this.angle)
+        SmartDashboard.putNumber("${moduleName} vel", this.velocity)
 
         move(optimizedState.speedMetersPerSecond, optimizedState.angle.radians)
     }
 
     private var m_brakeMode = NeutralMode.Brake
-    var brakeMode: Boolean
+    open var brakeMode: Boolean
         get() = m_brakeMode == NeutralMode.Brake
         set(value) {
             driveMotor.setNeutralMode(if (value) NeutralMode.Brake else NeutralMode.Coast)
             steerMotor.setNeutralMode(if (value) NeutralMode.Brake else NeutralMode.Coast)
             m_brakeMode = if (value) NeutralMode.Brake else NeutralMode.Coast
         }
-    fun zeroEncoders() {
+    open fun zeroEncoders() {
         enc.position = 0.0
     }
 
     /**
      * put module in the default 0 rotation and 0 speed
      */
-    fun reset() {
+    open fun reset() {
         this.move(SwerveModuleState(0.0, Rotation2d()))
     }
 
     // proper periodic method
     override fun periodic() {
-        SmartDashboard.putNumber("${name} ang", this.angle)
-        SmartDashboard.putNumber("${name} vel", this.velocity)
+        SmartDashboard.putNumber("${moduleName} ang", this.angle)
+        SmartDashboard.putNumber("${moduleName} vel", this.velocity)
         super.periodic()
     }
 
     // proper simulation periodic method
     override fun simulationPeriodic() {
-        SmartDashboard.putNumber("${name} ang", this.angle)
-        SmartDashboard.putNumber("${name} vel", this.velocity)
+        SmartDashboard.putNumber("${moduleName} ang", this.angle)
+        SmartDashboard.putNumber("${moduleName} vel", this.velocity)
+        enc.position = enc.position + (steerMotor.selectedSensorVelocity/2048.0) * 10
+
         super.simulationPeriodic()
     }
 
-    fun stop() {
+    open fun stop() {
         driveMotor.stopMotor()
-        steerMotor.stopMotor()
+        // point at center of robot based on module location
+        steerMotor.set(anglePid.calculate(angle, Math.atan2(translation2d.y, translation2d.x)))
     }
+
+    override fun toString(): String {
+        // debug info
+        return("position: ${enc.position}" +
+                "velocity: ${driveMotor.selectedSensorVelocity}" +
+                "angle: ${angle}" +
+                "drive: ${driveMotor.get()}" +
+                "steer: ${steerMotor.get()}" +
+                "power: ${driveMotor.getMotorOutputPercent()}" +
+                "driveMotorcurrent: ${driveMotor.getOutputCurrent()}")
+    }
+    companion object {
+        // add to simulation
+        // Constants for turn motor acceleration and top speed
+        // Note: These values are rough estimates and the actual performance of the motors may vary
+        const val TURN_MOTOR_ACCELERATION = 2.5 // time to reach full speed, in seconds
+        const val TURN_MOTOR_TOP_SPEED = 60.0 // maximum motor velocity, in ticks per 100ms
+
+        // Constants for drive motor acceleration and top speed
+        // Note: These values are rough estimates and the actual performance of the motors may vary
+        const val DRIVE_MOTOR_ACCELERATION = 2.5 // time to reach full speed, in seconds
+        const val DRIVE_MOTOR_TOP_SPEED = 80.0 // maximum motor velocity, in ticks per 100ms
+    }
+
 }
