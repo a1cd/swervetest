@@ -26,7 +26,6 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import frc.robot.Constants
-import frc.robot.subsystems.DrivetrainTest.DrivetrainSimulatedRobot
 import frc.robot.util.SimulatedRobot
 import frc.robot.util.SimulatedRobotTest
 import org.hamcrest.CoreMatchers.notNullValue
@@ -39,15 +38,11 @@ import org.junit.Test
 /**
  * Test the drivetrain subsystem.
  */
-class DrivetrainTest() : SimulatedRobotTest<DrivetrainSimulatedRobot>(
-    DrivetrainSimulatedRobot::class.java
-) {
-    override var robot: DrivetrainSimulatedRobot = DrivetrainSimulatedRobot(this)
+class DrivetrainTest() {
     @Test
     fun testMove() {
-        assumeThat(robot, notNullValue())
-        robot.drivetrain.move(1.0, 0.0, 0.0)
-        robot.modules.forEach { module ->
+        drivetrain.move(1.0, 0.0, 0.0)
+        modules.forEach { module ->
             module.moveCalled?.first?.let { Assert.assertEquals(1.0, it, 0.05) }
             module.moveCalled?.second?.let { Assert.assertEquals(0.0, it, 0.05) }
             assertNotNull("move() was not called on module ${module.moduleName}", module.moveCalled)
@@ -102,12 +97,10 @@ class DrivetrainTest() : SimulatedRobotTest<DrivetrainSimulatedRobot>(
                 super.brakeMode = value
             }
     }
-    class DrivetrainSimulatedRobot(test: DrivetrainTest): SimulatedRobot(test) {
-        val fl = TestSwerveModule(SwerveModule("fl", Constants.FrontLeftDriveMotor, Constants.FrontLeftSteerMotor, Constants.FrontLeftEncoder, Translation2d(1.0, 1.0)))
-        val fr = TestSwerveModule(SwerveModule("fr", Constants.FrontRightDriveMotor, Constants.FrontRightSteerMotor, Constants.FrontRightEncoder, Translation2d(1.0, 1.0)))
-        val bl = TestSwerveModule(SwerveModule("bl", Constants.BackLeftDriveMotor, Constants.BackLeftSteerMotor, Constants.BackLeftEncoder, Translation2d(1.0, 1.0)))
-        val br = TestSwerveModule(SwerveModule("br", Constants.BackRightDriveMotor, Constants.BackRightSteerMotor, Constants.BackRightEncoder, Translation2d(1.0, 1.0)))
-        val modules = listOf(fl, fr, bl, br)
-        var drivetrain = Drivetrain(fl, fr, bl, br)
-    }
+    val fl = TestSwerveModule(SwerveModule("fl", Constants.FrontLeftDriveMotor, Constants.FrontLeftSteerMotor, Constants.FrontLeftEncoder, Translation2d(1.0, 1.0)))
+    val fr = TestSwerveModule(SwerveModule("fr", Constants.FrontRightDriveMotor, Constants.FrontRightSteerMotor, Constants.FrontRightEncoder, Translation2d(1.0, 1.0)))
+    val bl = TestSwerveModule(SwerveModule("bl", Constants.BackLeftDriveMotor, Constants.BackLeftSteerMotor, Constants.BackLeftEncoder, Translation2d(1.0, 1.0)))
+    val br = TestSwerveModule(SwerveModule("br", Constants.BackRightDriveMotor, Constants.BackRightSteerMotor, Constants.BackRightEncoder, Translation2d(1.0, 1.0)))
+    val modules = listOf(fl, fr, bl, br)
+    var drivetrain = Drivetrain(fl, fr, bl, br)
 }

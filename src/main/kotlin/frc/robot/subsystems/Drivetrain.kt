@@ -3,7 +3,8 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
-import edu.wpi.first.wpilibj2.command.SubsystemBase
+import edu.wpi.first.wpilibj.simulation.BatterySim
+import edu.wpi.first.wpilibj.simulation.RoboRioSim
 import frc.robot.Constants
 
 /**
@@ -38,11 +39,12 @@ class Drivetrain(
         Constants.BackRightEncoder,
         Translation2d(-.32, .32)
     )
-): SubsystemBase() {
+): SimulatedSubsystem() {
 
 
 
-    val modules = arrayOf(fl, fr, br, bl)
+    val modules = listOf(fl, fr, br, bl)
+    override var children = modules.map { it as SimulatedSubsystem }
 
     val kinematics = SwerveDriveKinematics(
         *modules.map { it.translation2d }.toTypedArray()
@@ -83,4 +85,18 @@ class Drivetrain(
         set(value) {
             modules.forEach { it.brakeMode = value }
         }
+
+    override fun simulationPeriodic() {
+        modules.forEach { it.simulationPeriodic() }
+        // simulate battery voltage drop and roboRIO brownout
+        // get correct voltage to roborio:
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(
+            *modules
+                .flatMap { sequenceOf(it.driveMotorSystemSim, it.steerMotorSystemSim) }
+                .map { it.currentDrawAmps }
+                .toDoubleArray()
+            )
+        )
+    }
 }

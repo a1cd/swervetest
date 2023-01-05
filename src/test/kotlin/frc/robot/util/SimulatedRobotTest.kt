@@ -10,6 +10,9 @@ import java.util.concurrent.TimeUnit
 
 /**
  * annotation for test that is simulated
+ *
+ * should also apply another annotation that tells the test to repeat 5 times
+ *
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
@@ -52,17 +55,19 @@ abstract class SimulatedRobotTest<T: SimulatedRobot>(
     var robotInitLatch: CountDownLatch? = null
     abstract var robot: T
     fun setup() {
+        val self = this
         robotInitLatch = CountDownLatch(1)
-        val latch = CountDownLatch(1)
-        Thread {
-            RobotBase.startRobot { //FIXME: Concurent modification exception!!
-                robotClass.getConstructor(this.javaClass).newInstance(this@SimulatedRobotTest).also {
+        Thread.currentThread().run {
+            RobotBase.startRobot {
+                (robotClass.getConstructor(self.javaClass).newInstance(self) as T).also {
                     robot = it
-                    latch.countDown()
                 }
             }
-        }.start()
-        latch.await()
+        }
         robotInitLatch!!.await()
+    }
+    init {
+        print("javaclass at start of init:")
+        println(this.javaClass)
     }
 }

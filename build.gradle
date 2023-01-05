@@ -46,10 +46,6 @@ deploy {
 
 test {
     useJUnit()
-    // This is needed to run tests on the roboRIO
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
 }
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 
