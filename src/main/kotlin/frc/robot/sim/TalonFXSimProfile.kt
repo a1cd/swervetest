@@ -35,8 +35,8 @@ internal class TalonFXSimProfile
      * features of our products in simulation using our examples out of the box.
      * Users may modify this to utilize more accurate physics simulation.
      */
-    override fun run() {
-        val period = period
+    override fun run(dt: Double?) {
+        val period = if (dt == null) period else dt
         val accelAmount = fullVel / accelToFullTime * period / 1000
 
         /// DEVICE SPEED SIMULATION

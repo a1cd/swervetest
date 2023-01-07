@@ -18,8 +18,8 @@ internal class VictorSPXSimProfile
      * features of our products in simulation using our examples out of the box.
      * Users may modify this to utilize more accurate physics simulation.
      */
-    override fun run() {
-        // final double period = getPeriod();
+    override fun run(dt: Double?) {
+         val period = if (dt == null) period else dt
 
         // Device voltage simulation
         val outPerc = victor.simCollection.motorOutputLeadVoltage / 12

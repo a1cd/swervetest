@@ -3,14 +3,15 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
-import edu.wpi.first.wpilibj.simulation.BatterySim
-import edu.wpi.first.wpilibj.simulation.RoboRioSim
 import frc.robot.Constants
+import frc.robot.commands.DriveCommand
+import frc.robot.controls.ControlScheme
 
 /**
  * The drivetrain subsystem.
  */
 class Drivetrain(
+    controlScheme: ControlScheme,
     val fl: SwerveModule = SwerveModule(
         "fl",
         Constants.FrontLeftDriveMotor,
@@ -38,13 +39,10 @@ class Drivetrain(
         Constants.BackRightSteerMotor,
         Constants.BackRightEncoder,
         Translation2d(-.32, .32)
-    )
-): SimulatedSubsystem() {
-
-
+    ),
+): SimulatedSubsystem(fl,fr,br,bl) {
 
     val modules = listOf(fl, fr, br, bl)
-    override var children = modules.map { it as SimulatedSubsystem }
 
     val kinematics = SwerveDriveKinematics(
         *modules.map { it.translation2d }.toTypedArray()
@@ -57,12 +55,11 @@ class Drivetrain(
 
     fun move(x: Double, y: Double, rotation: Double) {
         val speeds = ChassisSpeeds(x,y, rotation)
-        val modules = kinematics.toSwerveModuleStates(speeds)
+        val moduleStates = kinematics.toSwerveModuleStates(speeds)
         // switch this to swerve kinematics, have one stick control X/Y, other for rotation
-        modules.forEachIndexed { i, state ->
-            this.modules[i].move(state)
+        moduleStates.forEachIndexed { i, state ->
+            this.modules[i].target = state
         }
-        println("moving drivetrain")
     }
 
     fun stop() {
@@ -86,17 +83,12 @@ class Drivetrain(
             modules.forEach { it.brakeMode = value }
         }
 
-    override fun simulationPeriodic() {
-        modules.forEach { it.simulationPeriodic() }
-        // simulate battery voltage drop and roboRIO brownout
-        // get correct voltage to roborio:
-        RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(
-            *modules
-                .flatMap { sequenceOf(it.driveMotorSystemSim, it.steerMotorSystemSim) }
-                .map { it.currentDrawAmps }
-                .toDoubleArray()
-            )
+    // this sets the default command to DriveCommand(this)
+    init {
+        defaultCommand = DriveCommand(
+            this,
+            controlScheme
         )
     }
+
 }

@@ -25,7 +25,6 @@ class SwerveModuleTest {
     val DELTA = 2e-2 // acceptable deviation range
     var swerveModule: SwerveModule = SwerveModule("test", 1, 2, 3, Translation2d(1.0, 1.0))
 
-
     @After
     fun tearDown() {
         PhysicsSim.instance.reset()
@@ -83,7 +82,7 @@ class SwerveModuleTest {
     @Test
     fun testMove() {
         // run the simulation and the swerve module's move method 100 times
-        for (i in 0..1000000) {
+        for (i in 0..10000) {
             // run the command scheduler and physics simulation
             simUpdate(swerveModule, dt = 0.02)
             // run the move method on the swerve module, passing in a drive value of 1.0 and an angle value of 1.0

@@ -69,10 +69,10 @@ class PhysicsSim {
      * - enable the robot
      * - simulate sensors
      */
-    fun run() {
+    fun run(dt: Double? = null) {
         // Simulate devices
         for (simProfile in simProfiles) {
-            simProfile.run()
+            simProfile.run(dt)
         }
     }
 
@@ -97,7 +97,7 @@ class PhysicsSim {
          * Runs the simulation profile.
          * Implemented by device-specific profiles.
          */
-        open fun run() {}
+        open fun run(dt: Double? = null) {}
         /**
          * The time since last call, in milliseconds.
          */

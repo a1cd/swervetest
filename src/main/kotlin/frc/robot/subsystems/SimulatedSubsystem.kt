@@ -5,11 +5,13 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.simulation.BatterySim
 import edu.wpi.first.wpilibj.simulation.RoboRioSim
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import frc.robot.sim.PhysicsSim
 
 open class SimulatedSubsystem(
     open var children: List<SimulatedSubsystem> = listOf()
 ): SubsystemBase() {
-    val isSim: Boolean get() = !RobotBase.isReal()
+    constructor(vararg children: SimulatedSubsystem): this(children.toList())
+    val isSim: Boolean = RobotBase.isSimulation()
     open val currentDraw: Double get() = children.map { it.currentDraw }.sum()
 
     open var lastTime = Timer.getFPGATimestamp()
@@ -36,6 +38,7 @@ open class SimulatedSubsystem(
             )
             // update all subsystems
             subsystems.forEach { if (dt == null) it.simUpdate() else it.simUpdate(dt) }
+            PhysicsSim.instance.run()
         }
     }
 }

@@ -2,14 +2,13 @@ package frc.robot
 
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj2.command.RunCommand
-import frc.robot.commands.DriveCommand
 import frc.robot.commands.ResetCommand
 import frc.robot.commands.ToggleBrakemodeCommand
 import frc.robot.commands.ZeroEncodersCommand
 import frc.robot.controls.ControlScheme
 import frc.robot.controls.DefaultControlScheme
 import frc.robot.subsystems.Drivetrain
+import frc.robot.subsystems.SimulatedSubsystem.Companion.simUpdate
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -24,7 +23,7 @@ open class RobotContainer(
 
     val controlType: ControlScheme = DefaultControlScheme(xbox)
 
-    val drivetrain = Drivetrain()
+    val drivetrain = Drivetrain(controlType)
 
     var controlScheme = controlType.apply {
         // control scheme
@@ -33,19 +32,7 @@ open class RobotContainer(
         resetAll.whileActiveOnce(ResetCommand(drivetrain))
 
         // drive command
-        forewardThresholdTrigger
-            .or(strafeThresholdTrigger)
-            .or(rotationThresholdTrigger)
-            .whileActiveContinuous(RunCommand({
-                DriveCommand(drivetrain, this).execute()
-            }, drivetrain))
-        forewardThresholdTrigger
-            .or(strafeThresholdTrigger)
-            .or(rotationThresholdTrigger)
-            .negate()
-            .whileActiveOnce(RunCommand({
-                DriveCommand(drivetrain, 0.0, 0.0, 0.0).execute()
-            }, drivetrain))
+
     }
 
     /**
@@ -82,6 +69,7 @@ open class RobotContainer(
     }
     open fun testPeriodic() {}
     open fun simulationPeriodic() {
+        simUpdate(drivetrain)
     }
 
     open fun robotInit() {}

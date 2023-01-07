@@ -10,8 +10,6 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.math.util.Units
-import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.simulation.BatterySim
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
 import edu.wpi.first.wpilibj.simulation.RoboRioSim
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
@@ -20,7 +18,6 @@ import frc.robot.Constants.WHEEL_CIRCUMFRENCE
 import frc.robot.Constants.WHEEL_RADIUS
 import frc.robot.sim.PhysicsSim
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 /**
  * The drivetrain subsystem.
@@ -37,63 +34,64 @@ open class SwerveModule(
 
     val driveMotor = WPI_TalonFX(driveId).apply {
         configFactoryDefault()
-//        PhysicsSim.instance.addTalonFX(
-//            this,
-//            DRIVE_MOTOR_ACCELERATION,
-//            DRIVE_MOTOR_TOP_SPEED
-//        )
+        PhysicsSim.instance.addTalonFX(
+            this,
+            DRIVE_MOTOR_ACCELERATION,
+            DRIVE_MOTOR_TOP_SPEED
+        )
     }
 
     val steerMotor = WPI_TalonFX(steerId).apply {
         configFactoryDefault()
-//        PhysicsSim.instance.addTalonFX(
-//            this,
-//            TURN_MOTOR_ACCELERATION,
-//            TURN_MOTOR_TOP_SPEED
-//        )
+        PhysicsSim.instance.addTalonFX(
+            this,
+            TURN_MOTOR_ACCELERATION,
+            TURN_MOTOR_TOP_SPEED
+        )
     }
 
     val enc = CANCoder(encId).apply {
         configSensorDirection(false)
-        PhysicsSim.instance.addCANCoder(this)
+//        PhysicsSim.instance.addCANCoder(this)
     }
 
 
 
     //should adjust these gains or characterize since they are a little slow
-    var DRIVE_P = 0.125
+    val DRIVE_P = 0.1
     val DRIVE_I = 0.0
     val DRIVE_D = 0.0
-    val drivePid = PIDController(DRIVE_P, DRIVE_I, DRIVE_D)
+    val drivePid = PIDController(DRIVE_P, DRIVE_I, DRIVE_D).apply {
+        setTolerance(0.1)
+    }
     //should adjust these gains or characterize since they are a little slow
-    var ANGLE_P = 0.23
+    val ANGLE_P = 0.01
     val ANGLE_I = 0.0
     val ANGLE_D = 0.0
     val anglePid = PIDController(ANGLE_P, ANGLE_I, ANGLE_D).apply {
         enableContinuousInput(-Math.PI, Math.PI)
     }
     // pid calc software came up with the optimal P I and D values by driving the robot around and measuring stuff
-    /**
-     * angle of the module in radians
-     */
-    val angle: Double
-        get() {
-            // if simulation
-            return if (isSim) {
-                MathUtil.angleModulus(steerMotorSystemSim.angularPositionRad)
-            } else {
-                MathUtil.angleModulus(Units.degreesToRadians(enc.position))
-            }
+    var target = SwerveModuleState()
+        get() = field
+        set(value) {
+            field = value
+            drivePid.setpoint = value.speedMetersPerSecond
+            anglePid.setpoint = value.angle.radians
         }
+    val state: SwerveModuleState
+        get() = SwerveModuleState(
+            // convert encoder ticks to meters
+            if (isSim) driveMotorSystemSim.angularVelocityRadPerSec * WHEEL_RADIUS
+            else driveMotor.selectedSensorVelocity / 2048 * WHEEL_CIRCUMFRENCE,
+            Rotation2d(
+                if (isSim) -MathUtil.angleModulus(steerMotorSystemSim.angularPositionRad)
+                else MathUtil.angleModulus(Units.degreesToRadians(enc.position/4096.0*360.0))
+            )
+        )
+    var angle: Double = 0.0
 
-    val velocity: Double
-        get() {
-            return if (!isSim) {
-                (driveMotor.selectedSensorVelocity/2048.0) * WHEEL_CIRCUMFRENCE * 10 / DRIVE_GEAR_RATIO
-            } else{
-                steerMotorSystemSim.angularVelocityRadPerSec * WHEEL_RADIUS
-            }
-        }
+    var velocity: Double = 0.0
     val driveMotorSystemSim: DCMotorSim by lazy {
         DCMotorSim(
             // gearbox is just the DCMotor that runs the wheel
@@ -107,7 +105,6 @@ open class SwerveModule(
             0.002825
         )
     }
-
     val steerMotorSystemSim: DCMotorSim by lazy {
         DCMotorSim(
             // we use a falcon 500 for the steer motor
@@ -122,14 +119,15 @@ open class SwerveModule(
         )
     }
 
-
     private fun setMotors(drive: Double, steer: Double) {
+        // simulate/set the motors
         if (isSim) {
-            driveMotorSystemSim.setInputVoltage(drive * RoboRioSim.getVInVoltage())
-            steerMotorSystemSim.setInputVoltage(steer * RoboRioSim.getVInVoltage())
+            // limit to stop destabilizing the simulation
+            steerMotorSystemSim.setInputVoltage((steer * RoboRioSim.getVInVoltage()).coerceIn(-12.0, 12.0))
+            driveMotorSystemSim.setInputVoltage((drive * RoboRioSim.getVInVoltage()).coerceIn(-12.0, 12.0))
         } else {
-            driveMotor.set(drive)
             steerMotor.set(steer)
+            driveMotor.set(drive)
         }
     }
     // switch to taking a DriveSubsystem module state instead of two doubles
@@ -139,60 +137,82 @@ open class SwerveModule(
      * @param angle angle in radians of the module
      */
     open fun move(drive: Double, angle: Double) {
-
         SmartDashboard.putNumber("$moduleName error", anglePid.positionError)
-        SmartDashboard.putNumber("$moduleName ang", this.angle)
-
+        SmartDashboard.putNumber("$moduleName ang3", this.angle)
         setMotors(
-            drivePid.calculate(velocity,drive),
-            if(drive.absoluteValue > 0.1)
-                -MathUtil.clamp(anglePid.calculate( this.angle, angle), -0.5, 0.5)
-            else
-                this.angle
+            drivePid.calculate(velocity),
+            -MathUtil.clamp(anglePid.calculate(this.angle), -0.25, 0.25)
         )
+        if (drive<0.05) {
+            stop()
+        }
 
-        brakeMode = abs(anglePid.positionError) < 0.05 && abs(drivePid.positionError) < 0.05 && abs(velocity) < 0.05
+        brakeMode = abs(anglePid.positionError) < 0.05 && abs(drivePid.positionError) < 0.05
+        // set brake mode to true if the module close to target angle and speed (brake mode does not engage brakes, just
+        // stops the motor from freely spinning when pushed)
+        throw RuntimeException("bad function")
     }
 
     /**
      * @param swerveModuleState the state of the module
      */
     open fun move(swerveModuleState: SwerveModuleState) {
-        val optimizedState = SwerveModuleState.optimize(swerveModuleState, Rotation2d(angle) )
+        val drivePower = drivePid.calculate(velocity, swerveModuleState.speedMetersPerSecond)
+        // fix this
+        // ok here is the commented fixed code (it now makes the motors reach and stay at the target speed):
+        /*
 
-        SmartDashboard.putNumber("${moduleName} desired speed", optimizedState.speedMetersPerSecond)
-        SmartDashboard.putNumber("${moduleName} desired ang", optimizedState.angle.degrees)
-        SmartDashboard.putNumber("${moduleName} ang", this.angle)
-        SmartDashboard.putNumber("${moduleName} vel", this.velocity)
-
-        move(optimizedState.speedMetersPerSecond, optimizedState.angle.radians)
+        val drivePower = drivePid.calculate(
+            velocity,
+            swerveModuleState.speedMetersPerSecond,
+            1.0 / 50.0
+        )
+         */
+        val steerPower = -MathUtil.clamp(anglePid.calculate(angle), -1.0, 1.0)
+        // smartdashboard
+        SmartDashboard.putNumber("$moduleName desired speed", drivePid.setpoint)
+        SmartDashboard.putNumber("$moduleName desired ang", anglePid.setpoint)
+        SmartDashboard.putNumber("$moduleName drive power", drivePower)
+        SmartDashboard.putNumber("$moduleName steer power", steerPower)
+        setMotors(
+            drivePower,
+            steerPower
+        )
+    }
+    private fun move() {
+        move(target)
     }
 
-    private var m_brakeMode = NeutralMode.Brake
+    private var mBrakemode = NeutralMode.Brake
     open var brakeMode: Boolean
-        get() = m_brakeMode == NeutralMode.Brake
+        get() = mBrakemode == NeutralMode.Brake
         set(value) {
             driveMotor.setNeutralMode(if (value) NeutralMode.Brake else NeutralMode.Coast)
             steerMotor.setNeutralMode(if (value) NeutralMode.Brake else NeutralMode.Coast)
-            m_brakeMode = if (value) NeutralMode.Brake else NeutralMode.Coast
+            mBrakemode = if (value) NeutralMode.Brake else NeutralMode.Coast
         }
-    open fun zeroEncoders() {
-        enc.position = 0.0
-    }
+    open fun zeroEncoders() =
+        if (isSim) steerMotor.selectedSensorPosition = 0.0
+        else enc.position = 0.0
 
     /**
      * put module in the default 0 rotation and 0 speed
      */
     open fun reset() {
-        this.move(SwerveModuleState(0.0, Rotation2d()))
+        target = SwerveModuleState()
     }
 
     // proper periodic method
     override fun periodic() {
-        SmartDashboard.putNumber("${moduleName} ang", this.angle)
-        SmartDashboard.putNumber("${moduleName} vel", this.velocity)
-        super.periodic()
+        // update velocity and angle
+        velocity = state.speedMetersPerSecond
+        angle = state.angle.radians
+        // update the pid controller with the current state of the module
+        move()
+
+        SmartDashboard.updateValues()
     }
+
     override var lastTime = 0.0
     override val currentDraw: Double
         get() {
@@ -206,38 +226,24 @@ open class SwerveModule(
         }
     override fun simUpdate(dt: Double) {
         if (isSim) {
-            driveMotorSystemSim.update(dt)
             steerMotorSystemSim.update(dt)
+            driveMotorSystemSim.update(dt)
         }
+        SmartDashboard.putNumber("$moduleName ang", this.angle)
+        SmartDashboard.putNumber("$moduleName vel", this.velocity)
     }
-    override fun simulationPeriodic() {
-        enc.position = enc.position + (steerMotor.selectedSensorVelocity/2048.0) * 10
-        // get time change
-        val dt = Timer.getFPGATimestamp() - lastTime
-        // update the simulation
-        driveMotorSystemSim.update(dt)
-        steerMotorSystemSim.update(dt)
-        // update lastTIme
-        lastTime = Timer.getFPGATimestamp()
-        RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(
-                driveMotorSystemSim.currentDrawAmps,
-                steerMotorSystemSim.currentDrawAmps
-            )
-        )
-    }
-
     open fun stop() {
+        setMotors(0.0, 0.0)
         driveMotor.stopMotor()
-        // point at center of robot based on module location
-        steerMotor.set(anglePid.calculate(angle, Math.atan2(translation2d.y, translation2d.x)))
+        steerMotor.stopMotor()
+        brakeMode = true
     }
 
     override fun toString(): String {
         // debug info
         return("position: ${enc.position}" +
                 "velocity: ${driveMotor.selectedSensorVelocity}" +
-                "angle: ${angle}" +
+                "angle: $angle" +
                 "drive: ${driveMotor.get()}" +
                 "steer: ${steerMotor.get()}" +
                 "power: ${driveMotor.getMotorOutputPercent()}" +
