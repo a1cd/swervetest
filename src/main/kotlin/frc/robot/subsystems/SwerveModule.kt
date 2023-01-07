@@ -62,7 +62,7 @@ open class SwerveModule(
     val DRIVE_I = 0.0
     val DRIVE_D = 0.0
     val drivePid = PIDController(DRIVE_P, DRIVE_I, DRIVE_D).apply {
-        setTolerance(0.1)
+        setTolerance(0.01)
     }
     //should adjust these gains or characterize since they are a little slow
     val ANGLE_P = 0.01
@@ -158,16 +158,6 @@ open class SwerveModule(
      */
     open fun move(swerveModuleState: SwerveModuleState) {
         val drivePower = drivePid.calculate(velocity, swerveModuleState.speedMetersPerSecond)
-        // fix this
-        // ok here is the commented fixed code (it now makes the motors reach and stay at the target speed):
-        /*
-
-        val drivePower = drivePid.calculate(
-            velocity,
-            swerveModuleState.speedMetersPerSecond,
-            1.0 / 50.0
-        )
-         */
         val steerPower = -MathUtil.clamp(anglePid.calculate(angle), -1.0, 1.0)
         // smartdashboard
         SmartDashboard.putNumber("$moduleName desired speed", drivePid.setpoint)
