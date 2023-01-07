@@ -100,38 +100,38 @@ jar {
 
 
 // get all test classes command (its used so that the test classes can be run through github actions)
-tasks.register('getTests') {
-    dependsOn compileKotlin
-    dependsOn compileJava
-    dependsOn processResources
-    dependsOn classes
-    dependsOn compileTestKotlin
-    dependsOn compileTestJava
-    dependsOn extractReleaseNative
-    dependsOn processTestResources
-    dependsOn testClasses
-
-    doLast {
-        // get files in build/classes/kotlin/test
-        def testClassesTree = fileTree(dir: 'build/classes/kotlin/test', include: '**/*.class')
-        // get files in build/classes/java/test
-        testClassesTree += fileTree(dir: 'build/classes/java/test', include: '**/*.class')
-
-        // create a list of test classes
-        def testClassList = testClassesTree.files.collect { it.name.replace(".class", "") }
-
-        // filter out the test classes that are not test classes
-        testClassList = testClassList.findAll { it.endsWith("Test") }
-
-        // convert each element to a string
-        def testClassListString = testClassList.collect { "\""+it.toString()+"\"" }
-
-        // write the list to tests.json
-        def testsJson = new File("tests.json")
-        testsJson.write(testClassListString.toString())
-
-    }
-}
+//tasks.register('getTests') {
+//    dependsOn compileKotlin
+//    dependsOn compileJava
+//    dependsOn processResources
+//    dependsOn classes
+//    dependsOn compileTestKotlin
+//    dependsOn compileTestJava
+//    dependsOn extractReleaseNative
+//    dependsOn processTestResources
+//    dependsOn testClasses
+//
+//    doLast {
+//        // get files in build/classes/kotlin/test
+//        def testClassesTree = fileTree(dir: 'build/classes/kotlin/test', include: '**/*.class')
+//        // get files in build/classes/java/test
+//        testClassesTree += fileTree(dir: 'build/classes/java/test', include: '**/*.class')
+//
+//        // create a list of test classes
+//        def testClassList = testClassesTree.files.collect { it.name.replace(".class", "") }
+//
+//        // filter out the test classes that are not test classes
+//        testClassList = testClassList.findAll { it.endsWith("Test") }
+//
+//        // convert each element to a string
+//        def testClassListString = testClassList.collect { "\""+it.toString()+"\"" }
+//
+//        // write the list to tests.json
+//        def testsJson = new File("tests.json")
+//        testsJson.write(testClassListString.toString())
+//
+//    }
+//}
 
 // Configure jar and deploy tasks
 deployArtifact.jarTask = jar

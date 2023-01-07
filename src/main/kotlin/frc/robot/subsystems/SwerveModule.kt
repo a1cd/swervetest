@@ -246,8 +246,7 @@ open class SwerveModule(
                 "angle: $angle" +
                 "drive: ${driveMotor.get()}" +
                 "steer: ${steerMotor.get()}" +
-                "power: ${driveMotor.getMotorOutputPercent()}" +
-                "driveMotorcurrent: ${driveMotor.getOutputCurrent()}")
+                "power: ${driveMotor.getMotorOutputPercent()}")
     }
     companion object {
         // add to simulation
