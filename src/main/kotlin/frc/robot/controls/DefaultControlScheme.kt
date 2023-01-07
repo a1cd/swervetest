@@ -11,13 +11,13 @@ class DefaultControlScheme(
 ): ControlScheme {
     override val forward: Double
         get() = // random noise
-            xbox.leftY + (Math.random() - 0.5) * 0.02
+            xbox.leftY// + (Math.random() - 0.5) * 0.02
 
     override val strafe: Double
-        get() = xbox.leftX + (Math.random() - 0.5) * 0.02
+        get() = xbox.leftX// + (Math.random() - 0.5) * 0.02
 
     override val rotation: Double
-        get() = xbox.rightX + (Math.random() - 0.5) * 0.02
+        get() = xbox.rightX// + (Math.random() - 0.5) * 0.02
 
     override val zeroEncoders: Button
         get() = Button { xbox.aButton }
