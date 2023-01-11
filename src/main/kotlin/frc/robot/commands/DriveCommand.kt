@@ -21,9 +21,9 @@ class DriveCommand(
 
     override fun execute() {
         drivetrain.move(
-            applyDeadband(controlScheme.forward , 0.075).pow(2.0).withSign(controlScheme.forward),
-            applyDeadband(controlScheme.strafe,   0.075).pow(2.0).withSign(controlScheme.strafe),
-            applyDeadband(controlScheme.rotation, 0.075).pow(2.0).withSign(controlScheme.rotation)
+            applyDeadband(controlScheme.forward , 0.055).pow(2.0).withSign(controlScheme.forward),
+            applyDeadband(controlScheme.strafe,   0.055).pow(2.0).withSign(controlScheme.strafe),
+            applyDeadband(controlScheme.rotation, 0.055).pow(2.0).withSign(controlScheme.rotation)
         )
     }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim
 import edu.wpi.first.wpilibj.simulation.RoboRioSim
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.robot.Constants.DRIVE_GEAR_RATIO
+import frc.robot.Constants.STEER_GEAR_RATIO
 import frc.robot.Constants.WHEEL_CIRCUMFRENCE
 import frc.robot.Constants.WHEEL_RADIUS
 import frc.robot.sim.PhysicsSim
@@ -53,23 +54,23 @@ open class SwerveModule(
     val enc = CANCoder(encId).apply {
         configSensorDirection(false)
 //        PhysicsSim.instance.addCANCoder(this)
+        this.setPositionToAbsolute()
     }
 
 
 
     //should adjust these gains or characterize since they are a little slow
-    val DRIVE_P = 0.1
+    val DRIVE_P = 0.5
     val DRIVE_I = 0.0
     val DRIVE_D = 0.0
     val drivePid = PIDController(DRIVE_P, DRIVE_I, DRIVE_D).apply {
-        setTolerance(0.01)
     }
     //should adjust these gains or characterize since they are a little slow
-    val ANGLE_P = 0.01
+    val ANGLE_P = 2.0
     val ANGLE_I = 0.0
     val ANGLE_D = 0.0
     val anglePid = PIDController(ANGLE_P, ANGLE_I, ANGLE_D).apply {
-        enableContinuousInput(-Math.PI, Math.PI)
+        enableContinuousInput(0.0, Math.PI*2)
     }
     // pid calc software came up with the optimal P I and D values by driving the robot around and measuring stuff
     var target = SwerveModuleState()
@@ -85,8 +86,8 @@ open class SwerveModule(
             if (isSim) driveMotorSystemSim.angularVelocityRadPerSec * WHEEL_RADIUS
             else driveMotor.selectedSensorVelocity / 2048 * WHEEL_CIRCUMFRENCE,
             Rotation2d(
-                if (isSim) -MathUtil.angleModulus(steerMotorSystemSim.angularPositionRad)
-                else MathUtil.angleModulus(Units.degreesToRadians(enc.position/4096.0*360.0))
+                if (isSim) -MathUtil.angleModulus(steerMotorSystemSim.angularPositionRad * STEER_GEAR_RATIO)
+                else MathUtil.angleModulus(Units.degreesToRadians(enc.position))
             )
         )
     var angle: Double = 0.0
@@ -128,6 +129,8 @@ open class SwerveModule(
         } else {
             steerMotor.set(steer)
             driveMotor.set(drive)
+            SmartDashboard.putNumber("$moduleName steerPower", steer)
+            SmartDashboard.putNumber("$moduleName drivePower", drive)
         }
     }
     // switch to taking a DriveSubsystem module state instead of two doubles
@@ -158,7 +161,7 @@ open class SwerveModule(
      */
     open fun move(swerveModuleState: SwerveModuleState) {
         val drivePower = drivePid.calculate(velocity, swerveModuleState.speedMetersPerSecond)
-        val steerPower = -MathUtil.clamp(anglePid.calculate(angle), -1.0, 1.0)
+        val steerPower = -MathUtil.clamp(anglePid.calculate(angle) / STEER_GEAR_RATIO, -1.0, 1.0)
         // smartdashboard
         SmartDashboard.putNumber("$moduleName desired speed", drivePid.setpoint)
         SmartDashboard.putNumber("$moduleName desired ang", anglePid.setpoint)
@@ -183,7 +186,10 @@ open class SwerveModule(
         }
     open fun zeroEncoders() =
         if (isSim) steerMotor.selectedSensorPosition = 0.0
-        else enc.position = 0.0
+        else {
+            enc.position = 0.0
+            enc.setPositionToAbsolute()
+        }
 
     /**
      * put module in the default 0 rotation and 0 speed
@@ -199,8 +205,12 @@ open class SwerveModule(
         angle = state.angle.radians
         // update the pid controller with the current state of the module
         move()
-
+        if (!isSim) {
+            SmartDashboard.putNumber("$moduleName ang", this.angle)
+            SmartDashboard.putNumber("$moduleName vel", this.velocity)
+        }
         SmartDashboard.updateValues()
+
     }
 
     override var lastTime = 0.0
@@ -218,9 +228,9 @@ open class SwerveModule(
         if (isSim) {
             steerMotorSystemSim.update(dt)
             driveMotorSystemSim.update(dt)
+            SmartDashboard.putNumber("$moduleName ang", this.angle)
+            SmartDashboard.putNumber("$moduleName vel", this.velocity)
         }
-        SmartDashboard.putNumber("$moduleName ang", this.angle)
-        SmartDashboard.putNumber("$moduleName vel", this.velocity)
     }
     open fun stop() {
         setMotors(0.0, 0.0)

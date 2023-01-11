@@ -83,6 +83,8 @@ class Drivetrain(
             modules.forEach { it.brakeMode = value }
         }
 
+    override fun periodic() {
+    }
     // this sets the default command to DriveCommand(this)
     init {
         defaultCommand = DriveCommand(
