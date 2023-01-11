@@ -2,6 +2,7 @@ package frc.robot
 
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import frc.robot.commands.AlignModules
 import frc.robot.commands.ResetCommand
 import frc.robot.commands.ToggleBrakemodeCommand
 import frc.robot.commands.ZeroEncodersCommand
@@ -32,7 +33,7 @@ open class RobotContainer(
         resetAll.whileActiveOnce(ResetCommand(drivetrain))
 
         // drive command
-
+        setOffsetToForeward.whenPressed(AlignModules(drivetrain))
     }
 
     /**

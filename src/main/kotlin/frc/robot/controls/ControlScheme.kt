@@ -41,6 +41,7 @@ interface ControlScheme {
      * the rotation value
      */
     val rotation: Double
+    val setOffsetToForeward: Button
     /**
      * the trigger for the rotation value
      */

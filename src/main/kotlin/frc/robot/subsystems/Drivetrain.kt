@@ -76,6 +76,9 @@ class Drivetrain(
         modules.forEach { it.reset() }
         println("resetting drivetrain")
     }
+    fun setOffsetToForeward() {
+        modules.forEach { it.setOffsetToForeward() }
+    }
 
     var brakeMode: Boolean
         get() = modules.all { it.brakeMode }

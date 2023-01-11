@@ -2,6 +2,7 @@ package frc.robot.subsystems
 
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
+import com.ctre.phoenix.sensors.AbsoluteSensorRange
 import com.ctre.phoenix.sensors.CANCoder
 import edu.wpi.first.math.MathUtil
 import edu.wpi.first.math.controller.PIDController
@@ -53,8 +54,13 @@ open class SwerveModule(
 
     val enc = CANCoder(encId).apply {
         configSensorDirection(false)
+        configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180)
 //        PhysicsSim.instance.addCANCoder(this)
+
         this.setPositionToAbsolute()
+        SmartDashboard.putNumber("$moduleName enc pos", this.position)
+        SmartDashboard.putNumber("$moduleName enc abs pos", this.absolutePosition)
+
     }
 
 
@@ -80,6 +86,7 @@ open class SwerveModule(
             drivePid.setpoint = value.speedMetersPerSecond
             anglePid.setpoint = value.angle.radians
         }
+    var offsetAngle = 0.0
     val state: SwerveModuleState
         get() = SwerveModuleState(
             // convert encoder ticks to meters
@@ -87,9 +94,10 @@ open class SwerveModule(
             else driveMotor.selectedSensorVelocity / 2048 * WHEEL_CIRCUMFRENCE,
             Rotation2d(
                 if (isSim) -MathUtil.angleModulus(steerMotorSystemSim.angularPositionRad * STEER_GEAR_RATIO)
-                else MathUtil.angleModulus(Units.degreesToRadians(enc.position))
+                else MathUtil.angleModulus(Units.degreesToRadians(enc.absolutePosition)+offsetAngle)
             )
         )
+
     var angle: Double = 0.0
 
     var velocity: Double = 0.0
@@ -187,7 +195,6 @@ open class SwerveModule(
     open fun zeroEncoders() =
         if (isSim) steerMotor.selectedSensorPosition = 0.0
         else {
-            enc.position = 0.0
             enc.setPositionToAbsolute()
         }
 
@@ -208,9 +215,10 @@ open class SwerveModule(
         if (!isSim) {
             SmartDashboard.putNumber("$moduleName ang", this.angle)
             SmartDashboard.putNumber("$moduleName vel", this.velocity)
+            SmartDashboard.putNumber("$moduleName enc pos", this.enc.position)
+            SmartDashboard.putNumber("$moduleName enc abs pos", this.enc.absolutePosition)
         }
         SmartDashboard.updateValues()
-
     }
 
     override var lastTime = 0.0
@@ -248,6 +256,11 @@ open class SwerveModule(
                 "steer: ${steerMotor.get()}" +
                 "power: ${driveMotor.getMotorOutputPercent()}")
     }
+
+    fun setOffsetToForeward() {
+        offsetAngle = -state.angle.radians
+    }
+
     companion object {
         // add to simulation
         // Constants for turn motor acceleration and top speed

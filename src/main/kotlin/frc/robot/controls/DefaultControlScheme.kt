@@ -21,6 +21,8 @@ class DefaultControlScheme(
 
     override val zeroEncoders: Button
         get() = Button { xbox.aButton }
+    override val setOffsetToForeward: Button
+        get() = Button {xbox.yButton}
     override val toggleBrakeMode: Button
         get() = Button { xbox.bButton }
     override val resetAll: Button
