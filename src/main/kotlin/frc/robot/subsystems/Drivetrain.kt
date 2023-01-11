@@ -3,40 +3,46 @@ package frc.robot.subsystems
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
-import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants
+import frc.robot.commands.DriveCommand
+import frc.robot.controls.ControlScheme
 
-class Drivetrain: SubsystemBase() {
-    val fl = SwerveModule(
+/**
+ * The drivetrain subsystem.
+ */
+class Drivetrain(
+    controlScheme: ControlScheme,
+    val fl: SwerveModule = SwerveModule(
         "fl",
         Constants.FrontLeftDriveMotor,
         Constants.FrontLeftSteerMotor,
         Constants.FrontLeftEncoder,
         Translation2d(.32, .32)
-    )
-    val fr = SwerveModule(
+    ),
+    val fr: SwerveModule = SwerveModule(
         "fr",
         Constants.FrontRightDriveMotor,
         Constants.FrontRightSteerMotor,
         Constants.FrontRightEncoder,
         Translation2d(.32, -.32)
-    )
-    val bl = SwerveModule(
+    ),
+    val bl: SwerveModule = SwerveModule(
         "bl",
         Constants.BackLeftDriveMotor,
         Constants.BackLeftSteerMotor,
         Constants.BackLeftEncoder,
         Translation2d(-.32, -.32)
-    )
-    val br = SwerveModule(
+    ),
+    val br: SwerveModule = SwerveModule(
         "br",
         Constants.BackRightDriveMotor,
         Constants.BackRightSteerMotor,
         Constants.BackRightEncoder,
         Translation2d(-.32, .32)
-    )
+    ),
+): SimulatedSubsystem(fl,fr,br,bl) {
 
-    val modules = arrayOf(fl, fr, br, bl)
+    val modules = listOf(fl, fr, br, bl)
 
     val kinematics = SwerveDriveKinematics(
         *modules.map { it.translation2d }.toTypedArray()
@@ -49,12 +55,11 @@ class Drivetrain: SubsystemBase() {
 
     fun move(x: Double, y: Double, rotation: Double) {
         val speeds = ChassisSpeeds(x,y, rotation)
-        val modules = kinematics.toSwerveModuleStates(speeds)
+        val moduleStates = kinematics.toSwerveModuleStates(speeds)
         // switch this to swerve kinematics, have one stick control X/Y, other for rotation
-        modules.forEachIndexed { i, state ->
-            this.modules[i].move(state)
+        moduleStates.forEachIndexed { i, state ->
+            this.modules[i].target = state
         }
-        println("moving drivetrain")
     }
 
     fun stop() {
@@ -71,6 +76,9 @@ class Drivetrain: SubsystemBase() {
         modules.forEach { it.reset() }
         println("resetting drivetrain")
     }
+    fun setOffsetToForeward() {
+        modules.forEach { it.setOffsetToForeward() }
+    }
 
     var brakeMode: Boolean
         get() = modules.all { it.brakeMode }
@@ -79,6 +87,13 @@ class Drivetrain: SubsystemBase() {
         }
 
     override fun periodic() {
-        modules.forEach { it.periodic() }
     }
+    // this sets the default command to DriveCommand(this)
+    init {
+        defaultCommand = DriveCommand(
+            this,
+            controlScheme
+        )
+    }
+
 }

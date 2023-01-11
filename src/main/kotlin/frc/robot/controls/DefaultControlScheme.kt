@@ -2,30 +2,27 @@ package frc.robot.controls
 
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.button.Button
-import edu.wpi.first.wpilibj2.command.button.Trigger
 
+/**
+ * A control scheme is a set of buttons and triggers that are used to control the robot.
+ */
 class DefaultControlScheme(
     var xbox: XboxController = XboxController(0)
 ): ControlScheme {
     override val forward: Double
-        get() = xbox.leftY
-
-    override val forewardThresholdTrigger: Trigger
-        get() = Trigger { (xbox.leftY > 0.05) || (xbox.leftY < -0.05) }
+        get() = // random noise
+            xbox.leftY// + (Math.random() - 0.5) * 0.02
 
     override val strafe: Double
-        get() = xbox.leftX
+        get() = xbox.leftX// + (Math.random() - 0.5) * 0.02
 
-    override val strafeThresholdTrigger: Trigger
-        get() = Trigger { (xbox.leftX > 0.05) || (xbox.leftX < -0.05) }
     override val rotation: Double
-        get() = xbox.rightX
-
-    override val rotationThresholdTrigger: Trigger
-        get() = Trigger { (xbox.rightX > 0.05) || (xbox.rightX < -0.05) }
+        get() = xbox.rightX// + (Math.random() - 0.5) * 0.02
 
     override val zeroEncoders: Button
         get() = Button { xbox.aButton }
+    override val setOffsetToForeward: Button
+        get() = Button {xbox.yButton}
     override val toggleBrakeMode: Button
         get() = Button { xbox.bButton }
     override val resetAll: Button

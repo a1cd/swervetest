@@ -2,22 +2,29 @@ package frc.robot
 
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj2.command.RunCommand
-import frc.robot.commands.DriveCommand
+import frc.robot.commands.AlignModules
 import frc.robot.commands.ResetCommand
 import frc.robot.commands.ToggleBrakemodeCommand
 import frc.robot.commands.ZeroEncodersCommand
+import frc.robot.controls.ControlScheme
 import frc.robot.controls.DefaultControlScheme
 import frc.robot.subsystems.Drivetrain
+import frc.robot.subsystems.SimulatedSubsystem.Companion.simUpdate
 
-class RobotContainer(
+/**
+ * This class is where the bulk of the robot should be declared.  Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
+ * (including subsystems, commands, and button mappings) should be declared here.
+ */
+open class RobotContainer(
     xbox: XboxController = XboxController(0)
 ) {
     var state: RobotState? = null
 
-    val controlType = DefaultControlScheme(xbox)
+    val controlType: ControlScheme = DefaultControlScheme(xbox)
 
-    val drivetrain = Drivetrain()
+    val drivetrain = Drivetrain(controlType)
 
     var controlScheme = controlType.apply {
         // control scheme
@@ -26,22 +33,13 @@ class RobotContainer(
         resetAll.whileActiveOnce(ResetCommand(drivetrain))
 
         // drive command
-        forewardThresholdTrigger
-            .or(strafeThresholdTrigger)
-            .or(rotationThresholdTrigger)
-            .whileActiveContinuous(RunCommand({
-                DriveCommand(drivetrain, this).execute()
-            }, drivetrain))
-        // this actually took forever to fix
-        // it was a problem with the control scheme, it was not sending updated values
-        // to the drive command so it was always using the starting values
-        // i fixed it by making the drive command take in the control scheme as a parameter
+        setOffsetToForeward.whenPressed(AlignModules(drivetrain))
     }
 
     /**
      * called by robot periodic
      */
-    fun periodic() {
+    open fun periodic() {
         // put the state in the smart dashboard along with control scheme data
         state?.let { state ->
             SmartDashboard.putString("state", state.name)
@@ -51,26 +49,29 @@ class RobotContainer(
         SmartDashboard.putNumber("rotation", controlScheme.rotation)
         SmartDashboard.putBoolean("brakeMode", drivetrain.brakeMode)
     }
-    fun disabledInit() {
+    open fun disabledInit() {
         state = RobotState.DISABLED
         drivetrain.stop()
     }
-    fun disabledPeriodic() {}
-    fun autonomousInit() {
+    open fun disabledPeriodic() {}
+    open fun autonomousInit() {
         state = RobotState.AUTONOMOUS
     }
-    fun autonomousPeriodic() {
+    open fun autonomousPeriodic() {
     }
-    fun teleopInit() {
+    open fun teleopInit() {
         state = RobotState.TELEOP
     }
-    fun teleopPeriodic() {
+    open fun teleopPeriodic() {
         controlScheme
     }
-    fun testInit() {
+    open fun testInit() {
         state = RobotState.TEST
     }
-    fun testPeriodic() {}
-    fun simulationPeriodic() {
+    open fun testPeriodic() {}
+    open fun simulationPeriodic() {
+        simUpdate(drivetrain)
     }
+
+    open fun robotInit() {}
 }

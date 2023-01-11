@@ -1,38 +1,29 @@
 package frc.robot.commands
 
+import edu.wpi.first.math.MathUtil.applyDeadband
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.robot.controls.ControlScheme
 import frc.robot.subsystems.Drivetrain
+import kotlin.math.pow
+import kotlin.math.withSign
 
 
-// new command base drive command class
+/**
+ * The default drive command.
+ */
 class DriveCommand(
-    private val drivetrain: Drivetrain,
-    private val forward: Double,
-    private val strafe: Double,
-    private val rotation: Double
+    val drivetrain: Drivetrain,
+    val controlScheme: ControlScheme
 ): CommandBase() {
-    constructor(drivetrain: Drivetrain, controlScheme: ControlScheme): this(
-        drivetrain,
-        controlScheme.forward,
-        controlScheme.strafe,
-        controlScheme.rotation
-    )
     init {
         addRequirements(drivetrain)
     }
-    // get from control scheme
+
     override fun execute() {
         drivetrain.move(
-            forward,
-            strafe,
-            rotation
+            applyDeadband(-controlScheme.forward , 0.055).pow(2.0).withSign(controlScheme.forward),
+            applyDeadband(-controlScheme.strafe,   0.055).pow(2.0).withSign(controlScheme.strafe),
+            applyDeadband(controlScheme.rotation, 0.055).pow(2.0).withSign(controlScheme.rotation)
         )
-        println("forward: $forward, strafe: $strafe, rotation: $rotation")
-    }
-    override fun isFinished(): Boolean = false
-
-    override fun end(interrupted: Boolean) {
-        drivetrain.move(0.0, 0.0, 0.0)
     }
 }

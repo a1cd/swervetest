@@ -1,0 +1,73 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Drivetrain": "Subsystem",
+      "/LiveWindow/SwerveModule": "Subsystem",
+      "/LiveWindow/Ungrouped/PIDController[10]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[11]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[12]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[13]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[14]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[15]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[16]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[4]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[5]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[6]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[7]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[8]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[9]": "PIDController",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/Talon FX [10]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [11]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [12]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [13]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [14]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [15]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [16]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [17]": "Motor Controller"
+    }
+  },
+  "NetworkTables": {
+    "SmartDashboard": {
+      "open": true
+    }
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "axis": [
+            {
+              "autoFit": true
+            }
+          ],
+          "height": 338,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/bl ang"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/bl vel"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

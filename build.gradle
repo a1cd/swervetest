@@ -1,4 +1,7 @@
+//file:noinspection DependencyNotationArgument
 import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
+
+import java.util.jar.JarFile
 
 plugins {
     id "java"
@@ -14,6 +17,7 @@ def ROBOT_MAIN_CLASS = "frc.robot.Main"
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
+    //noinspection GroovyAssignabilityCheck
     targets {
         roborio(getTargetTypeClass('RoboRIO')) {
             // Team number is loaded either from the .wpilib/wpilib_preferences.json
@@ -43,13 +47,14 @@ deploy {
 test {
     useJUnit()
 }
-
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 
 // Set to true to use debug for JNI.
+//noinspection GroovyAssignabilityCheck, GroovyAccessibility
 wpi.java.debugJni = false
 
 // Set this to true to enable desktop support.
+//noinspection GroovyUnusedAssignment
 def includeDesktopSupport = true
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
@@ -57,7 +62,8 @@ def includeDesktopSupport = true
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+//    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+//    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -78,6 +84,7 @@ dependencies {
 }
 
 // Simulation configuration (e.g. environment variables).
+//noinspection GroovyAssignabilityCheck,GroovyAccessibility
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
@@ -86,9 +93,45 @@ wpi.sim.addDriverstation()
 // knows where to look for our Robot Class.
 jar {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    //noinspection UnnecessaryQualifiedReference
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+
+
+// get all test classes command (its used so that the test classes can be run through github actions)
+//tasks.register('getTests') {
+//    dependsOn compileKotlin
+//    dependsOn compileJava
+//    dependsOn processResources
+//    dependsOn classes
+//    dependsOn compileTestKotlin
+//    dependsOn compileTestJava
+//    dependsOn extractReleaseNative
+//    dependsOn processTestResources
+//    dependsOn testClasses
+//
+//    doLast {
+//        // get files in build/classes/kotlin/test
+//        def testClassesTree = fileTree(dir: 'build/classes/kotlin/test', include: '**/*.class')
+//        // get files in build/classes/java/test
+//        testClassesTree += fileTree(dir: 'build/classes/java/test', include: '**/*.class')
+//
+//        // create a list of test classes
+//        def testClassList = testClassesTree.files.collect { it.name.replace(".class", "") }
+//
+//        // filter out the test classes that are not test classes
+//        testClassList = testClassList.findAll { it.endsWith("Test") }
+//
+//        // convert each element to a string
+//        def testClassListString = testClassList.collect { "\""+it.toString()+"\"" }
+//
+//        // write the list to tests.json
+//        def testsJson = new File("tests.json")
+//        testsJson.write(testClassListString.toString())
+//
+//    }
+//}
 
 // Configure jar and deploy tasks
 deployArtifact.jarTask = jar
