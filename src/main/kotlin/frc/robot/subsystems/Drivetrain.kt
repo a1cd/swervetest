@@ -7,28 +7,28 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.robot.Constants
 
 class Drivetrain: SubsystemBase() {
-    val fl = SwerveModule(
+    val fl = SwerveModuleOld(
         "fl",
         Constants.FrontLeftDriveMotor,
         Constants.FrontLeftSteerMotor,
         Constants.FrontLeftEncoder,
         Translation2d(.32, .32)
     )
-    val fr = SwerveModule(
+    val fr = SwerveModuleOld(
         "fr",
         Constants.FrontRightDriveMotor,
         Constants.FrontRightSteerMotor,
         Constants.FrontRightEncoder,
         Translation2d(.32, -.32)
     )
-    val bl = SwerveModule(
+    val bl = SwerveModuleOld(
         "bl",
         Constants.BackLeftDriveMotor,
         Constants.BackLeftSteerMotor,
         Constants.BackLeftEncoder,
         Translation2d(-.32, -.32)
     )
-    val br = SwerveModule(
+    val br = SwerveModuleOld(
         "br",
         Constants.BackRightDriveMotor,
         Constants.BackRightSteerMotor,

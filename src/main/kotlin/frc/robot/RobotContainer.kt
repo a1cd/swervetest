@@ -1,5 +1,6 @@
 package frc.robot
 
+import DriveSubsystem
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.RunCommand
@@ -18,6 +19,7 @@ class RobotContainer(
     val controlType = DefaultControlScheme(xbox)
 
     val drivetrain = Drivetrain()
+    val driveSubsystem = DriveSubsystem()
 
     var controlScheme = controlType.apply {
         // control scheme
